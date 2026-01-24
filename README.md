@@ -407,7 +407,7 @@ This project is provided as-is for educational purposes.
 Built with ❤️ as a learning project demonstrating Spring Boot best practices.
 
 **Technologies Used:**
-- Spring Boot 4.0.2
+- Spring Boot 3.5.10
 - Java 21
 - Maven
 - Lombok
