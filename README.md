@@ -78,6 +78,10 @@ demo/
 │   ├── service/
 │   │   ├── AuthService.java                 # Auth business logic
 │   │   └── WalletService.java               # Wallet business logic
+│   ├─ repository/
+│       ├─ TransactionRepository.class
+│       ├─ UserRepository.class
+│       └─ WalletRepository.class
 │   ├── dataaccess/
 │   │   ├── DataApi.java                     # Data interface (abstraction)
 │   │   └── MockDataApiImpl.java             # Mock implementation
