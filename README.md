@@ -132,7 +132,7 @@ demo/
 
 1. **Clone or navigate to the project**
 ```bash
-cd d:\softwave\KiemThu\demo
+cd d:\softwave\KiemThu\software
 ```
 
 2. **Build the project**
