@@ -58,7 +58,7 @@ Perfect for learning backend development or as a template for new projects!
 | Component | Technology | Version |
 |-----------|-----------|---------|
 | Language | Java | 21 |
-| Framework | Spring Boot | 4.0.2 |
+| Framework | Spring Boot | 3.5.10 |
 | Build Tool | Maven | 3.6+ |
 | HTTP | Spring Web | Latest |
 | Validation | Jakarta Validation | Latest |
