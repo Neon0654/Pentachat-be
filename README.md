@@ -80,7 +80,8 @@ demo/
 │   │   └── WalletService.java               # Wallet business logic
 │   ├── dataaccess/
 │   │   ├── DataApi.java                     # Data interface (abstraction)
-│   │   └── MockDataApiImpl.java              # Mock implementation
+│   │   └── MockDataApiImpl.java             # Mock implementation
+|   |   └── JpaDataApiImpl.java              # Jpa Implementation
 │   ├── datastore/
 │   │   └── MockDataStore.java               # In-memory database
 │   ├── model/
