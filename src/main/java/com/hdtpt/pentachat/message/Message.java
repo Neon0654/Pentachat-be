@@ -1,4 +1,4 @@
-package com.hdtpt.pentachat.model;
+package com.hdtpt.pentachat.message;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

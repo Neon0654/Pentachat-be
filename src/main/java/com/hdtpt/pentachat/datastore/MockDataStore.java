@@ -23,6 +23,7 @@ public class MockDataStore {
     private final List<User> users = new ArrayList<>();
     private final List<Wallet> wallets = new ArrayList<>();
     private final List<Transaction> transactions = new ArrayList<>();
+    private final List<com.hdtpt.pentachat.message.Message> messages = new ArrayList<>();
 
     // ============ USER OPERATIONS ============
 
@@ -132,6 +133,58 @@ public class MockDataStore {
         return new ArrayList<>(transactions);
     }
 
+    // ============ MESSAGE OPERATIONS ============
+
+    /**
+     * Add a new message
+     */
+    public void addMessage(com.hdtpt.pentachat.message.Message message) {
+        messages.add(message);
+    }
+
+    /**
+     * Find messages by toUserId
+     */
+    public List<com.hdtpt.pentachat.message.Message> findMessagesByToUserId(String toUserId) {
+        return messages.stream()
+                .filter(m -> m.getToUserId().equals(toUserId))
+                .toList();
+    }
+
+    /**
+     * Find messages between two users
+     */
+    public List<com.hdtpt.pentachat.message.Message> findMessagesBetweenUsers(String userId1, String userId2) {
+        return messages.stream()
+                .filter(m -> (m.getFromUserId().equals(userId1) && m.getToUserId().equals(userId2)) ||
+                        (m.getFromUserId().equals(userId2) && m.getToUserId().equals(userId1)))
+                .toList();
+    }
+
+    /**
+     * Mark a message as read
+     */
+    public void markMessageAsRead(String messageId) {
+        messages.stream()
+                .filter(m -> m.getId().equals(messageId))
+                .findFirst()
+                .ifPresent(m -> m.setIsRead(true));
+    }
+
+    /**
+     * Delete a message by ID
+     */
+    public void deleteMessage(String messageId) {
+        messages.removeIf(m -> m.getId().equals(messageId));
+    }
+
+    /**
+     * Get all messages
+     */
+    public List<com.hdtpt.pentachat.message.Message> getAllMessages() {
+        return new ArrayList<>(messages);
+    }
+
     // ============ DATA RESET ============
 
     /**
@@ -141,5 +194,6 @@ public class MockDataStore {
         users.clear();
         wallets.clear();
         transactions.clear();
+        messages.clear();
     }
 }

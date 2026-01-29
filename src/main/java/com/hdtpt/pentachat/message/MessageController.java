@@ -1,9 +1,6 @@
-package com.hdtpt.pentachat.controller;
+package com.hdtpt.pentachat.message;
 
-import com.hdtpt.pentachat.dto.request.MessageRequest;
 import com.hdtpt.pentachat.dto.response.ApiResponse;
-import com.hdtpt.pentachat.dto.response.MessageResponse;
-import com.hdtpt.pentachat.service.MessageService;
 import com.hdtpt.pentachat.service.SessionManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

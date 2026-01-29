@@ -1,6 +1,6 @@
 package com.hdtpt.pentachat.gate;
 
-import com.hdtpt.pentachat.dto.MessageDTO;
+import com.hdtpt.pentachat.message.MessageDTO;
 
 public class ConnectionGuard {
 

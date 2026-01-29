@@ -1,8 +1,9 @@
 package com.hdtpt.pentachat.datastore;
 
-import com.hdtpt.pentachat.model.Message;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.hdtpt.pentachat.message.Message;
 
 /**
  * Mock data store for messages

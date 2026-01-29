@@ -15,5 +15,5 @@ import lombok.NoArgsConstructor;
 public class AuthResponse {
     private String id;
     private String username;
-    private String message;
+    private String sessionId;
 }

@@ -1,4 +1,4 @@
-package com.hdtpt.pentachat.dto.request;
+package com.hdtpt.pentachat.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

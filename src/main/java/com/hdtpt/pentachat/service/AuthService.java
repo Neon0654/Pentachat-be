@@ -23,6 +23,7 @@ public class AuthService {
 
     /**
      * Register a new user
+     * 
      * @param username user's username
      * @param password user's password
      * @return registered user
@@ -53,6 +54,7 @@ public class AuthService {
 
     /**
      * Login user
+     * 
      * @param username user's username
      * @param password user's password
      * @return user if credentials are correct
@@ -74,5 +76,15 @@ public class AuthService {
         }
 
         return user;
+    }
+
+    /**
+     * Create session for user
+     * 
+     * @param user logged-in user
+     * @return session ID
+     */
+    public String createSession(User user) {
+        return SessionManager.createSession(user.getId(), user.getUsername());
     }
 }

@@ -1,6 +1,8 @@
 package com.hdtpt.pentachat.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hdtpt.pentachat.message.ChatMessage;
+
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;

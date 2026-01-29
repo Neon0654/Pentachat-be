@@ -1,17 +1,36 @@
 package com.hdtpt.pentachat.websocket;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+/**
+ * WebSocket STOMP Configuration
+ * 
+ * Endpoint: /ws - Client kết nối vào đây
+ * Subscribe: /topic/messages - Client subscribe để nhận messages
+ * Send: /app/chat.send - Client gửi message vào đây
+ */
 @Configuration
-@EnableWebSocket
-public class WebSocketConfig implements WebSocketConfigurer {
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
-    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new ChatWebSocketHandler(), "/ws/chat")
-                .setAllowedOrigins("*");
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+        // Enable simple broker cho /topic prefix
+        config.enableSimpleBroker("/topic");
+
+        // Prefix cho các message từ client
+        config.setApplicationDestinationPrefixes("/app");
+    }
+
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        // Đăng ký endpoint /ws với SockJS fallback
+        registry.addEndpoint("/ws")
+                .setAllowedOriginPatterns("*") // Allow all origins cho testing
+                .withSockJS(); // Enable SockJS fallback
     }
 }

@@ -11,9 +11,22 @@ import java.util.concurrent.ConcurrentHashMap;
  * Ví dụ: "user1" -> {sessionId: "abc123", isOnline: true}
  */
 public class SessionManager {
-    
+
     // Map để lưu userId -> session info
     private static final Map<String, SessionInfo> userSessions = new ConcurrentHashMap<>();
+
+    /**
+     * Tạo session mới cho user
+     * 
+     * @param userId   ID của user
+     * @param username Username của user
+     * @return sessionId được generate
+     */
+    public static String createSession(String userId, String username) {
+        String sessionId = "ses_" + java.util.UUID.randomUUID().toString();
+        userSessions.put(userId, new SessionInfo(userId, sessionId, true));
+        return sessionId;
+    }
 
     /**
      * Lưu session của user
