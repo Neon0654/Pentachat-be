@@ -22,10 +22,18 @@ import java.util.Objects;
  * Uses Spring Data JPA repositories for database operations
  * 
  * This implementation is used for production database access
+<<<<<<< HEAD
  */
 
 @Repository
 @Primary // Spring sẽ ưu tiên dùng DB thay vì Mock
+=======
+ * DISABLED for mock data mode
+ */
+
+// @Repository - DISABLED: Using MockDataApiImpl for mock data mode
+// @Primary - Disabled: Using MockDataApiImpl for mock data mode
+>>>>>>> origin/master
 public class JpaDataApiImpl implements DataApi {
 
     private final UserRepository userRepo;

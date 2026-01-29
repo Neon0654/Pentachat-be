@@ -15,6 +15,10 @@ import java.util.List;
  * Later, replace with JpaDataApiImpl for production database
  */
 @Component
+<<<<<<< HEAD
+=======
+@org.springframework.context.annotation.Primary
+>>>>>>> origin/master
 public class MockDataApiImpl implements DataApi {
     private final MockDataStore dataStore;
     public MockDataApiImpl() {
