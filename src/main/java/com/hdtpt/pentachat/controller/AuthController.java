@@ -41,7 +41,7 @@ public class AuthController {
         AuthResponse data = AuthResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
-                .message("Registration successful")
+                .sessionId(null) // No session created on registration
                 .build();
 
         ApiResponse response = ApiResponse.builder()
@@ -61,10 +61,13 @@ public class AuthController {
     public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request) {
         User user = authService.login(request.getUsername(), request.getPassword());
 
+        // Create session for user
+        String sessionId = authService.createSession(user);
+
         AuthResponse data = AuthResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
-                .message("Login successful")
+                .sessionId(sessionId)
                 .build();
 
         ApiResponse response = ApiResponse.builder()

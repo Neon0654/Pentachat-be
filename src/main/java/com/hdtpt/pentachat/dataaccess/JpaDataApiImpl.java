@@ -5,6 +5,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hdtpt.pentachat.message.Message;
+import com.hdtpt.pentachat.message.MessageRepository;
 import com.hdtpt.pentachat.model.Transaction;
 import com.hdtpt.pentachat.model.User;
 import com.hdtpt.pentachat.model.Wallet;
@@ -31,15 +33,17 @@ public class JpaDataApiImpl implements DataApi {
     private final UserRepository userRepo;
     private final WalletRepository walletRepo;
     private final TransactionRepository txRepo;
+    private final MessageRepository messageRepo;
 
     public JpaDataApiImpl(
             UserRepository userRepo,
             WalletRepository walletRepo,
-            TransactionRepository txRepo
-    ) {
+            TransactionRepository txRepo,
+            MessageRepository messageRepo) {
         this.userRepo = userRepo;
         this.walletRepo = walletRepo;
         this.txRepo = txRepo;
+        this.messageRepo = messageRepo;
     }
 
     // ================= USER =================
@@ -58,17 +62,13 @@ public class JpaDataApiImpl implements DataApi {
     @Override
     public User findUserByUsername(String username) {
         return userRepo.findByUsername(username)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found: " + username)
-                );
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
     }
 
     @Override
     public User findUserById(String userId) {
         return userRepo.findById(userId)
-                .orElseThrow(() ->
-                        new RuntimeException("User ID not found: " + userId)
-                );
+                .orElseThrow(() -> new RuntimeException("User ID not found: " + userId));
     }
 
     @Override
@@ -81,9 +81,7 @@ public class JpaDataApiImpl implements DataApi {
     @Override
     public Wallet getWalletByUserId(String userId) {
         return walletRepo.findById(userId)
-                .orElseThrow(() ->
-                        new RuntimeException("Wallet not found for user: " + userId)
-                );
+                .orElseThrow(() -> new RuntimeException("Wallet not found for user: " + userId));
     }
 
     @Override
@@ -109,7 +107,6 @@ public class JpaDataApiImpl implements DataApi {
         walletRepo.save(wallet);
     }
 
-
     // ================= TRANSACTION =================
 
     @Override
@@ -118,8 +115,7 @@ public class JpaDataApiImpl implements DataApi {
             Transaction.TransactionType type,
             String fromUserId,
             String toUserId,
-            Double amount
-    ) {
+            Double amount) {
         Transaction tx = Transaction.builder()
                 .id(IdGenerator.generateId())
                 .type(type)
@@ -135,5 +131,50 @@ public class JpaDataApiImpl implements DataApi {
     @Override
     public List<Transaction> getTransactionsByUserId(String userId) {
         return txRepo.findByFromUserIdOrToUserId(userId, userId);
+    }
+
+    // ================= MESSAGE =================
+
+    @Override
+    @Transactional
+    public Message createMessage(String fromUserId, String toUserId, String content) {
+        Message message = Message.builder()
+                .id(IdGenerator.generateId())
+                .fromUserId(fromUserId)
+                .toUserId(toUserId)
+                .content(content)
+                .createdAt(LocalDateTime.now())
+                .isRead(false)
+                .build();
+
+        return messageRepo.save(message);
+    }
+
+    @Override
+    public List<Message> getMessagesByToUserId(String toUserId) {
+        return messageRepo.findByToUserId(toUserId);
+    }
+
+    @Override
+    public List<Message> getConversationBetweenUsers(String userId1, String userId2) {
+        // Tìm tất cả messages giữa 2 users (cả 2 chiều)
+        return messageRepo.findByFromUserIdAndToUserIdOrToUserIdAndFromUserId(
+                userId1, userId2,
+                userId1, userId2);
+    }
+
+    @Override
+    @Transactional
+    public void markMessageAsRead(String messageId) {
+        Message message = messageRepo.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("Message not found: " + messageId));
+        message.setIsRead(true);
+        // Không cần save() – Hibernate tự flush
+    }
+
+    @Override
+    @Transactional
+    public void deleteMessage(String messageId) {
+        messageRepo.deleteById(messageId);
     }
 }

@@ -1,5 +1,6 @@
 package com.hdtpt.pentachat.dataaccess;
 
+import com.hdtpt.pentachat.message.Message;
 import com.hdtpt.pentachat.model.Transaction;
 import com.hdtpt.pentachat.model.User;
 import com.hdtpt.pentachat.model.Wallet;
@@ -77,4 +78,31 @@ public interface DataApi {
      * Get transactions for a user
      */
     List<Transaction> getTransactionsByUserId(String userId);
+
+    // ============ MESSAGE OPERATIONS ============
+
+    /**
+     * Create and save a new message
+     */
+    Message createMessage(String fromUserId, String toUserId, String content);
+
+    /**
+     * Get all messages sent to a user (inbox)
+     */
+    List<Message> getMessagesByToUserId(String toUserId);
+
+    /**
+     * Get conversation between two users
+     */
+    List<Message> getConversationBetweenUsers(String userId1, String userId2);
+
+    /**
+     * Mark a message as read
+     */
+    void markMessageAsRead(String messageId);
+
+    /**
+     * Delete a message by ID
+     */
+    void deleteMessage(String messageId);
 }
