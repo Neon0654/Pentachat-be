@@ -1,0 +1,347 @@
+================================================================================
+                        HƯỚNG DẪN TEST MESSAGING SYSTEM
+================================================================================
+
+BẠN CÓ 2 CÁCH TEST:
+  1. Dùng PowerShell (Invoke-WebRequest)
+  2. Dùng curl (bash/terminal)
+
+================================================================================
+                       CÁCH 1: POWERSHELL (DỄ NHẤT)
+================================================================================
+
+BỨC 1: CHẠY APP
+  cd "E:\GG dowload\Testing-Lab-feature-socket-out\Testing-Lab-feature-socket-out"
+  .\mvnw.cmd spring-boot:run
+
+  ⏳ Chờ tới khi thấy: "Tomcat started on port 8080"
+  
+  ✅ Lúc này 5 users đã auto-initialize: user1, user2, user3, alice, bob
+
+---
+
+BƯỚC 2: MỞ TERMINAL MỚI (Giữ cái đang chạy app)
+
+---
+
+BƯỚC 3: TEST 1 - GỬI TIN NHẮN (user1 gửi cho user2)
+
+Chạy trong PowerShell:
+
+  $body = '{"from":"user1","to":"user2","content":"Hello user2"}'
+  Invoke-WebRequest -Uri "http://localhost:8080/message/send" `
+    -Method POST `
+    -ContentType "application/json" `
+    -Body $body `
+    -UseBasicParsing
+
+✅ Kết quả: Nên thấy response 200 OK với message ID, timestamp
+
+---
+
+BƯỚC 4: TEST 2 - XEM INBOX CỦA USER2
+
+  Invoke-WebRequest -Uri "http://localhost:8080/message/inbox/user2" `
+    -Method GET `
+    -UseBasicParsing
+
+✅ Kết quả: Thấy tin nhắn từ user1 vừa gửi
+
+---
+
+BƯỚC 5: TEST 3 - XEM CONVERSATION GIỮA 2 USER
+
+  Invoke-WebRequest -Uri "http://localhost:8080/message/conversation/user1/user2" `
+    -Method GET `
+    -UseBasicParsing
+
+✅ Kết quả: Danh sách tất cả tin nhắn giữa user1 và user2
+
+---
+
+BƯỚC 6: TEST 4 - ALICE GỬI CHO BOB
+
+  $body = '{"from":"alice","to":"bob","content":"Hi Bob"}'
+  Invoke-WebRequest -Uri "http://localhost:8080/message/send" `
+    -Method POST `
+    -ContentType "application/json" `
+    -Body $body `
+    -UseBasicParsing
+
+✅ Kết quả: Alice's message sent successfully
+
+---
+
+BƯỚC 7: TEST 5 - BOB REPLY LẠI
+
+  $body = '{"from":"bob","to":"alice","content":"Hi Alice, how are you?"}'
+  Invoke-WebRequest -Uri "http://localhost:8080/message/send" `
+    -Method POST `
+    -ContentType "application/json" `
+    -Body $body `
+    -UseBasicParsing
+
+✅ Kết quả: Bob's message sent successfully
+
+---
+
+BƯỚC 8: TEST 6 - LẤY TOÀN BỘ CONVERSATION
+
+  Invoke-WebRequest -Uri "http://localhost:8080/message/conversation/alice/bob" `
+    -Method GET `
+    -UseBasicParsing
+
+✅ Kết quả: Cả 2 messages (alice→bob, bob→alice)
+
+---
+
+BƯỚC 9: TEST 7 - CHECK XEM USER NÀO ONLINE
+
+  Invoke-WebRequest -Uri "http://localhost:8080/message/status/alice" `
+    -Method GET `
+    -UseBasicParsing
+
+✅ Kết quả: alice online = true
+
+---
+
+BƯỚC 10: TEST 8 - MARK MESSAGE AS READ
+
+  # Lấy message ID từ test 3 hoặc 8, ví dụ:
+  # "id": "f89f65e1-fa50-4e4b-8cc0-4887c67d7e17"
+  
+  Invoke-WebRequest -Uri "http://localhost:8080/message/read/user2/f89f65e1-fa50-4e4b-8cc0-4887c67d7e17" `
+    -Method POST `
+    -UseBasicParsing
+
+✅ Kết quả: Message marked as read
+
+================================================================================
+                          CÁCH 2: SỬ DỤNG CURL (BASH)
+================================================================================
+
+BƯỚC 1: CHẠY APP (như trên)
+
+---
+
+BƯỚC 2: TEST 1 - GỬI TIN NHẮN
+
+  curl -X POST http://localhost:8080/message/send \
+    -H "Content-Type: application/json" \
+    -d '{"from":"user1","to":"user2","content":"Hello user2"}'
+
+---
+
+BƯỚC 3: TEST 2 - XEM INBOX
+
+  curl http://localhost:8080/message/inbox/user2
+
+---
+
+BƯỚC 4: TEST 3 - CONVERSATION
+
+  curl http://localhost:8080/message/conversation/user1/user2
+
+---
+
+BƯỚC 5: TEST 4 - CHECK STATUS
+
+  curl http://localhost:8080/message/status/user1
+
+---
+
+BƯỚC 6: TEST 5 - DELETE MESSAGE
+
+  curl -X DELETE http://localhost:8080/message/user2/{messageId}
+
+  (Thay {messageId} bằng ID từ kết quả test 2)
+
+================================================================================
+                         CÁC TEST USERS CÓ SẶN
+================================================================================
+
+Không cần login, dùng trực tiếp:
+
+  ✅ user1    → Gửi tin cho user2 hoặc user3
+  ✅ user2    → Gửi tin cho user1 hoặc user3
+  ✅ user3    → Gửi tin cho user1 hoặc user2
+  ✅ alice    → Gửi tin cho bob
+  ✅ bob      → Gửi tin cho alice
+
+EXAMPLE:
+  {"from":"user1","to":"user2","content":"hello"}  ✅ OK
+  {"from":"alice","to":"bob","content":"hi"}       ✅ OK
+  {"from":"user1","to":"alice","content":"msg"}    ✅ OK
+
+================================================================================
+                           6 API ENDPOINTS
+================================================================================
+
+1. GỬI TIN NHẮN
+   POST /message/send
+   Input:  {"from":"user1","to":"user2","content":"hello"}
+   Output: Message with ID, timestamp, sender, content
+
+2. XEM INBOX
+   GET /message/inbox/{userId}
+   Input:  /message/inbox/user2
+   Output: List of messages received by user2
+
+3. XEM CONVERSATION
+   GET /message/conversation/{user1}/{user2}
+   Input:  /message/conversation/user1/user2
+   Output: All messages between user1 & user2
+
+4. MARK AS READ
+   POST /message/read/{userId}/{messageId}
+   Input:  /message/read/user2/abc123
+   Output: Success response
+
+5. DELETE MESSAGE
+   DELETE /message/{userId}/{messageId}
+   Input:  /message/user2/abc123
+   Output: Success response
+
+6. CHECK STATUS (ONLINE)
+   GET /message/status/{userId}
+   Input:  /message/status/alice
+   Output: {userId, isOnline: true/false}
+
+================================================================================
+                        EXPECTED RESPONSES
+================================================================================
+
+✅ SUCCESS (200 OK):
+{
+  "success": true,
+  "message": "Message sent successfully. Recipient online: true",
+  "data": {
+    "id": "f89f65e1-fa50-4e4b-8cc0-4887c67d7e17",
+    "from": "user1",
+    "to": "user2",
+    "content": "Hello user2",
+    "createdAt": "2026-01-26T15:05:24.216",
+    "isRead": false
+  }
+}
+
+❌ ERROR (400 Bad Request):
+{
+  "success": false,
+  "message": "Validation error",
+  "error": "Content cannot be empty"
+}
+
+================================================================================
+                      FULL TEST SCENARIO - COPY PASTE
+================================================================================
+
+# TEST GỬIV NHẮN TỪ user1 ĐẾN user2
+
+$body = '{"from":"user1","to":"user2","content":"Hello from user1"}'
+$response = Invoke-WebRequest -Uri "http://localhost:8080/message/send" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body $body `
+  -UseBasicParsing
+
+Write-Host "Status: $($response.StatusCode)"
+Write-Host $response.Content
+
+# TEST XEM INBOX CỦA user2
+
+$inbox = Invoke-WebRequest -Uri "http://localhost:8080/message/inbox/user2" `
+  -Method GET `
+  -UseBasicParsing
+
+Write-Host "Inbox User2:"
+Write-Host $inbox.Content
+
+# TEST CONVERSATION
+
+$conv = Invoke-WebRequest -Uri "http://localhost:8080/message/conversation/user1/user2" `
+  -Method GET `
+  -UseBasicParsing
+
+Write-Host "Conversation:"
+Write-Host $conv.Content
+
+# KIỂM TRA STATUS
+
+$status = Invoke-WebRequest -Uri "http://localhost:8080/message/status/user1" `
+  -Method GET `
+  -UseBasicParsing
+
+Write-Host "User1 Status:"
+Write-Host $status.Content
+
+================================================================================
+                        TROUBLESHOOTING
+================================================================================
+
+❌ "Address already in use" - Port 8080 đang dùng
+  → Cách 1: Tắt cái kia, chạy lại
+  → Cách 2: Dùng port khác: .\mvnw.cmd spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"
+
+❌ "Could not connect" - App chưa chạy
+  → Chạy: .\mvnw.cmd spring-boot:run
+  → Chờ "Tomcat started on port 8080"
+
+❌ "400 Bad Request" - Sai input
+  → Kiểm tra JSON format
+  → Kiểm tra "from" và "to" là users có sẵn
+  → Kiểm tra "content" không trống
+
+❌ "404 Not Found" - Endpoint sai
+  → Kiểm tra URL: /message/send, /message/inbox, etc.
+  → Kiểm tra method: POST vs GET
+
+================================================================================
+                         QUICK REFERENCE
+================================================================================
+
+Gửi tin:
+  $body = '{"from":"user1","to":"user2","content":"hi"}'
+  IWR -Uri "http://localhost:8080/message/send" -Method POST -ContentType "application/json" -Body $body -UseBasicParsing
+
+Xem inbox:
+  IWR -Uri "http://localhost:8080/message/inbox/user2" -Method GET -UseBasicParsing
+
+Xem conversation:
+  IWR -Uri "http://localhost:8080/message/conversation/user1/user2" -Method GET -UseBasicParsing
+
+Check online:
+  IWR -Uri "http://localhost:8080/message/status/user1" -Method GET -UseBasicParsing
+
+(Note: IWR = Invoke-WebRequest)
+
+================================================================================
+                        CÔNG THỨC CHUNG
+================================================================================
+
+POST (GỬI TIN):
+  $body = '{"from":"USER1","to":"USER2","content":"YOUR MESSAGE"}'
+  IWR -Uri "http://localhost:8080/message/send" `
+    -Method POST `
+    -ContentType "application/json" `
+    -Body $body `
+    -UseBasicParsing
+
+GET (LẤY DỮ LIỆU):
+  IWR -Uri "http://localhost:8080/message/inbox/USER_ID" `
+    -Method GET `
+    -UseBasicParsing
+
+================================================================================
+
+TÓM TẮT:
+  1. Chạy app: .\mvnw.cmd spring-boot:run
+  2. Mở terminal mới
+  3. Copy-paste code từ trên
+  4. Thay từ: user1, user2, alice, bob
+  5. Thay content: "hello", "hi", etc.
+  6. Chạy command
+
+✅ Done! Bạn sẽ thấy response ngay lập tức
+
+================================================================================
