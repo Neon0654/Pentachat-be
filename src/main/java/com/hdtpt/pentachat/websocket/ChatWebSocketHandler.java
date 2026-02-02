@@ -1,7 +1,7 @@
 package com.hdtpt.pentachat.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hdtpt.pentachat.message.ChatMessage;
+import com.hdtpt.pentachat.message.dto.MessageDTO;
 
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -18,7 +18,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         String payload = message.getPayload();
 
         // Convert JSON -> Object
-        ChatMessage chatMessage = objectMapper.readValue(payload, ChatMessage.class);
+        MessageDTO chatMessage = objectMapper.readValue(payload, MessageDTO.class);
 
         // In ra console để chứng minh đã nhận
         System.out.println("===== WEBSOCKET MESSAGE RECEIVED =====");

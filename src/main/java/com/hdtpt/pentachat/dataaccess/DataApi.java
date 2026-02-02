@@ -1,9 +1,9 @@
 package com.hdtpt.pentachat.dataaccess;
 
-import com.hdtpt.pentachat.message.Message;
-import com.hdtpt.pentachat.model.Transaction;
-import com.hdtpt.pentachat.model.User;
-import com.hdtpt.pentachat.model.Wallet;
+import com.hdtpt.pentachat.message.model.Message;
+import com.hdtpt.pentachat.transaction.model.Transaction;
+import com.hdtpt.pentachat.users.model.User;
+import com.hdtpt.pentachat.wallet.model.Wallet;
 
 import java.util.List;
 

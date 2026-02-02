@@ -5,15 +5,15 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hdtpt.pentachat.message.Message;
-import com.hdtpt.pentachat.message.MessageRepository;
-import com.hdtpt.pentachat.model.Transaction;
-import com.hdtpt.pentachat.model.User;
-import com.hdtpt.pentachat.model.Wallet;
-import com.hdtpt.pentachat.repository.TransactionRepository;
-import com.hdtpt.pentachat.repository.UserRepository;
-import com.hdtpt.pentachat.repository.WalletRepository;
+import com.hdtpt.pentachat.message.model.Message;
+import com.hdtpt.pentachat.message.repository.MessageRepository;
+import com.hdtpt.pentachat.transaction.model.Transaction;
+import com.hdtpt.pentachat.transaction.repository.TransactionRepository;
+import com.hdtpt.pentachat.users.model.User;
+import com.hdtpt.pentachat.users.repository.UserRepository;
 import com.hdtpt.pentachat.util.IdGenerator;
+import com.hdtpt.pentachat.wallet.model.Wallet;
+import com.hdtpt.pentachat.wallet.repository.WalletRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -50,10 +50,13 @@ public class JpaDataApiImpl implements DataApi {
 
     @Override
     public @NonNull User createUser(String username, String password) {
+        LocalDateTime now = LocalDateTime.now();
         User user = User.builder()
                 .id(IdGenerator.generateId())
                 .username(username)
                 .password(password)
+                .createdAt(now)
+                .updatedAt(now)
                 .build();
 
         return Objects.requireNonNull(userRepo.save(user));
@@ -99,9 +102,12 @@ public class JpaDataApiImpl implements DataApi {
             return; // tránh tạo trùng wallet
         }
 
+        LocalDateTime now = LocalDateTime.now();
         Wallet wallet = Wallet.builder()
                 .userId(userId)
                 .balance(initialBalance)
+                .createdAt(now)
+                .updatedAt(now)
                 .build();
 
         walletRepo.save(wallet);
@@ -116,13 +122,15 @@ public class JpaDataApiImpl implements DataApi {
             String fromUserId,
             String toUserId,
             Double amount) {
+        LocalDateTime now = LocalDateTime.now();
         Transaction tx = Transaction.builder()
                 .id(IdGenerator.generateId())
                 .type(type)
                 .fromUserId(fromUserId)
                 .toUserId(toUserId)
                 .amount(amount)
-                .createdAt(LocalDateTime.now())
+                .createdAt(now)
+                .updatedAt(now)
                 .build();
 
         return txRepo.save(tx);
@@ -138,12 +146,14 @@ public class JpaDataApiImpl implements DataApi {
     @Override
     @Transactional
     public Message createMessage(String fromUserId, String toUserId, String content) {
+        LocalDateTime now = LocalDateTime.now();
         Message message = Message.builder()
                 .id(IdGenerator.generateId())
                 .fromUserId(fromUserId)
                 .toUserId(toUserId)
                 .content(content)
-                .createdAt(LocalDateTime.now())
+                .createdAt(now)
+                .updatedAt(now)
                 .isRead(false)
                 .build();
 

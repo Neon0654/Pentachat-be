@@ -3,9 +3,9 @@ package com.hdtpt.pentachat.datastore;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.hdtpt.pentachat.model.Transaction;
-import com.hdtpt.pentachat.model.User;
-import com.hdtpt.pentachat.model.Wallet;
+import com.hdtpt.pentachat.transaction.model.Transaction;
+import com.hdtpt.pentachat.users.model.User;
+import com.hdtpt.pentachat.wallet.model.Wallet;
 
 /**
  * In-memory data store for mock data
@@ -23,7 +23,7 @@ public class MockDataStore {
     private final List<User> users = new ArrayList<>();
     private final List<Wallet> wallets = new ArrayList<>();
     private final List<Transaction> transactions = new ArrayList<>();
-    private final List<com.hdtpt.pentachat.message.Message> messages = new ArrayList<>();
+    private final List<com.hdtpt.pentachat.message.model.Message> messages = new ArrayList<>();
 
     // ============ USER OPERATIONS ============
 
@@ -138,14 +138,14 @@ public class MockDataStore {
     /**
      * Add a new message
      */
-    public void addMessage(com.hdtpt.pentachat.message.Message message) {
+    public void addMessage(com.hdtpt.pentachat.message.model.Message message) {
         messages.add(message);
     }
 
     /**
      * Find messages by toUserId
      */
-    public List<com.hdtpt.pentachat.message.Message> findMessagesByToUserId(String toUserId) {
+    public List<com.hdtpt.pentachat.message.model.Message> findMessagesByToUserId(String toUserId) {
         return messages.stream()
                 .filter(m -> m.getToUserId().equals(toUserId))
                 .toList();
@@ -154,7 +154,7 @@ public class MockDataStore {
     /**
      * Find messages between two users
      */
-    public List<com.hdtpt.pentachat.message.Message> findMessagesBetweenUsers(String userId1, String userId2) {
+    public List<com.hdtpt.pentachat.message.model.Message> findMessagesBetweenUsers(String userId1, String userId2) {
         return messages.stream()
                 .filter(m -> (m.getFromUserId().equals(userId1) && m.getToUserId().equals(userId2)) ||
                         (m.getFromUserId().equals(userId2) && m.getToUserId().equals(userId1)))
@@ -181,7 +181,7 @@ public class MockDataStore {
     /**
      * Get all messages
      */
-    public List<com.hdtpt.pentachat.message.Message> getAllMessages() {
+    public List<com.hdtpt.pentachat.message.model.Message> getAllMessages() {
         return new ArrayList<>(messages);
     }
 

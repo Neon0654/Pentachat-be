@@ -2,10 +2,11 @@ package com.hdtpt.pentachat.dataaccess;
 
 import org.springframework.stereotype.Component;
 import com.hdtpt.pentachat.datastore.MockDataStore;
-import com.hdtpt.pentachat.model.Transaction;
-import com.hdtpt.pentachat.model.User;
-import com.hdtpt.pentachat.model.Wallet;
+import com.hdtpt.pentachat.transaction.model.Transaction;
+import com.hdtpt.pentachat.users.model.User;
 import com.hdtpt.pentachat.util.IdGenerator;
+import com.hdtpt.pentachat.wallet.model.Wallet;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -28,10 +29,13 @@ public class MockDataApiImpl implements DataApi {
     // ============ USER OPERATIONS ============
     @Override
     public User createUser(String username, String password) {
+        LocalDateTime now = LocalDateTime.now();
         User user = User.builder()
                 .id(IdGenerator.generateId())
                 .username(username)
                 .password(password)
+                .createdAt(now)
+                .updatedAt(now)
                 .build();
         dataStore.addUser(user);
         return user;
@@ -65,9 +69,12 @@ public class MockDataApiImpl implements DataApi {
 
     @Override
     public void createWallet(String userId, Double initialBalance) {
+        LocalDateTime now = LocalDateTime.now();
         Wallet wallet = Wallet.builder()
                 .userId(userId)
                 .balance(initialBalance)
+                .createdAt(now)
+                .updatedAt(now)
                 .build();
         dataStore.addWallet(wallet);
     }
@@ -79,13 +86,15 @@ public class MockDataApiImpl implements DataApi {
             String fromUserId,
             String toUserId,
             Double amount) {
+        LocalDateTime now = LocalDateTime.now();
         Transaction transaction = Transaction.builder()
                 .id(IdGenerator.generateId())
                 .type(type)
                 .fromUserId(fromUserId)
                 .toUserId(toUserId)
                 .amount(amount)
-                .createdAt(LocalDateTime.now())
+                .createdAt(now)
+                .updatedAt(now)
                 .build();
         dataStore.addTransaction(transaction);
         return transaction;
@@ -99,13 +108,15 @@ public class MockDataApiImpl implements DataApi {
     // ============ MESSAGE OPERATIONS ============
 
     @Override
-    public com.hdtpt.pentachat.message.Message createMessage(String fromUserId, String toUserId, String content) {
-        com.hdtpt.pentachat.message.Message message = com.hdtpt.pentachat.message.Message.builder()
+    public com.hdtpt.pentachat.message.model.Message createMessage(String fromUserId, String toUserId, String content) {
+        LocalDateTime now = LocalDateTime.now();
+        com.hdtpt.pentachat.message.model.Message message = com.hdtpt.pentachat.message.model.Message.builder()
                 .id(IdGenerator.generateId())
                 .fromUserId(fromUserId)
                 .toUserId(toUserId)
                 .content(content)
-                .createdAt(LocalDateTime.now())
+                .createdAt(now)
+                .updatedAt(now)
                 .isRead(false)
                 .build();
         dataStore.addMessage(message);
@@ -113,12 +124,12 @@ public class MockDataApiImpl implements DataApi {
     }
 
     @Override
-    public List<com.hdtpt.pentachat.message.Message> getMessagesByToUserId(String toUserId) {
+    public List<com.hdtpt.pentachat.message.model.Message> getMessagesByToUserId(String toUserId) {
         return dataStore.findMessagesByToUserId(toUserId);
     }
 
     @Override
-    public List<com.hdtpt.pentachat.message.Message> getConversationBetweenUsers(String userId1, String userId2) {
+    public List<com.hdtpt.pentachat.message.model.Message> getConversationBetweenUsers(String userId1, String userId2) {
         return dataStore.findMessagesBetweenUsers(userId1, userId2);
     }
 
