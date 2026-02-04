@@ -18,6 +18,7 @@
             </div>
             <div class="header-right">
                 <span class="username-display">👤 <span id="currentUsername">Loading...</span></span>
+                <button id="friendsBtn" class="btn">Tìm bạn bè</button> <!-- Nút mới -->
                 <button id="logoutBtn" class="btn btn-logout">Đăng Xuất</button>
             </div>
         </div>
@@ -45,6 +46,30 @@
             </form>
         </div>
     </div>
+
+    <!-- Friends Modal -->
+    <div id="friendsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Tìm kiếm bạn bè</h2>
+                <span class="close-btn" id="closeFriendsModalBtn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="friends-section">
+                    
+                    <div class="search-box" style="margin-bottom: 15px;">
+                        <input type="text" id="userSearchInput" placeholder="Nhập username để tìm..."
+                            class="input-recipient" style="width: 100%;">
+                    </div>
+                    <div id="allUsersList" class="user-list">
+                    </div>
+                </div>
+
+                
+            </div>
+        </div>
+    </div>
+
 
     <!-- WebSocket Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>

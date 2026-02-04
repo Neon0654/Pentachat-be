@@ -2,6 +2,7 @@ package com.hdtpt.pentachat.datastore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.hdtpt.pentachat.transaction.model.Transaction;
 import com.hdtpt.pentachat.users.model.User;
@@ -196,4 +197,15 @@ public class MockDataStore {
         transactions.clear();
         messages.clear();
     }
+    
+    public List<User> searchUsers(String query) {
+    if (query == null || query.trim().isEmpty()) {
+        return List.of(); 
+    }
+    
+    // Quét trực tiếp trên List users
+    return users.stream()
+            .filter(u -> u.getUsername().toLowerCase().contains(query.toLowerCase()))
+            .collect(Collectors.toList());
+}
 }

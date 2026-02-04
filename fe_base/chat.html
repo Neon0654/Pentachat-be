@@ -18,6 +18,7 @@
             </div>
             <div class="header-right">
                 <span class="username-display">👤 <span id="currentUsername">Loading...</span></span>
+                <button id="friendsBtn" class="btn">Bạn bè</button> <!-- Nút mới -->
                 <button id="logoutBtn" class="btn btn-logout">Đăng Xuất</button>
             </div>
         </div>
@@ -45,6 +46,42 @@
             </form>
         </div>
     </div>
+
+    <!-- Friends Modal -->
+    <div id="friendsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Quản lý Bạn bè</h2>
+                <span class="close-btn" id="closeFriendsModalBtn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- All Users Section -->
+                <div class="friends-section">
+                    <h3>Tìm người dùng</h3>
+                    <div id="allUsersList" class="user-list">
+                        <!-- User items will be injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Incoming Requests Section -->
+                <div class="friends-section">
+                    <h3>Lời mời đang chờ</h3>
+                    <div id="incomingRequestsList" class="user-list">
+                        <!-- Request items will be injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Friends List Section -->
+                <div class="friends-section">
+                    <h3>Bạn bè</h3>
+                    <div id="friendsList" class="user-list">
+                        <!-- Friend items will be injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- WebSocket Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
