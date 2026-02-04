@@ -11,7 +11,7 @@ let currentUsername = null;
 let userId = null;
 let sessionId = null;
 let isConnected = false;
-let searchTimeout = null; // Dùng cho debounce tìm kiếm
+let searchTimeout = null;
 
 // --- Main Initialization ---
 window.addEventListener('DOMContentLoaded', () => {
@@ -37,9 +37,13 @@ window.addEventListener('DOMContentLoaded', () => {
     messageForm.addEventListener('submit', sendMessage);
     logoutBtn.addEventListener('click', handleLogout);
 
-    // 5. Khởi tạo Module Tìm kiếm (Friends Modal)
+    // 5. Khởi tạo các Module
     if (document.getElementById('friendsBtn')) {
         initializeFriendsManagement();
+    }
+    
+    if (document.getElementById('createGroupBtn')) {
+        initializeGroupManagement();
     }
 });
 
@@ -71,7 +75,7 @@ function onError(error) {
     isConnected = false;
     updateConnectionStatus('disconnected');
     document.getElementById('sendBtn').disabled = true;
-    setTimeout(connectWebSocket, 5000); // Thử kết nối lại sau 5s
+    setTimeout(connectWebSocket, 5000);
 }
 
 function onMessageReceived(payload) {
@@ -104,7 +108,7 @@ function sendMessage(event) {
 }
 
 // ===================================
-// FRIENDS & SEARCH MODULE (Đã lược bỏ logic lỗi)
+// FRIENDS & SEARCH MODULE
 // ===================================
 
 function initializeFriendsManagement() {
@@ -114,12 +118,9 @@ function initializeFriendsManagement() {
     const allUsersList = document.getElementById('allUsersList');
     const userSearchInput = document.getElementById('userSearchInput');
 
-    // --- Hàm gọi API Tìm kiếm ---
     const performSearch = async (query) => {
         try {
-            // Hiển thị loading nhẹ
             allUsersList.innerHTML = '<p style="padding:10px; color:var(--text-secondary);">Đang tìm...</p>';
-            
             const response = await fetch(`${API_BASE_URL}/api/users/search?q=${query}`, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -127,64 +128,157 @@ function initializeFriendsManagement() {
                     'X-Session-Id': sessionId
                 }
             });
-
             const resData = await response.json();
-
-            if (resData.success) {
-                renderUserList(allUsersList, resData.data);
-            } else {
-                allUsersList.innerHTML = `<p style="padding:10px; color:var(--error-color);">${resData.message}</p>`;
-            }
+            if (resData.success) renderUserList(allUsersList, resData.data);
         } catch (error) {
-            console.error("❌ Search API Error:", error);
-            allUsersList.innerHTML = '<p style="padding:10px; color:var(--error-color);">Lỗi kết nối Server.</p>';
+            console.error("❌ Search error:", error);
         }
     };
 
-    // --- Hàm hiển thị danh sách User ---
     const renderUserList = (container, users) => {
         container.innerHTML = '';
         if (!users || users.length === 0) {
-            container.innerHTML = '<p style="padding:10px; color:var(--text-secondary);">Không tìm thấy người dùng nào.</p>';
+            container.innerHTML = '<p style="padding:10px; color:var(--text-secondary);">Không tìm thấy ai.</p>';
             return;
         }
-
         users.forEach(user => {
             const div = document.createElement('div');
             div.className = 'user-list-item';
-            div.innerHTML = `
-                <span class="username">👤 ${escapeHtml(user.username)}</span>
-                <div class="actions">
-                    <button class="btn-action btn-add" data-id="${user.id}">Thêm bạn</button>
-                </div>
-            `;
+            div.innerHTML = `<span>👤 ${escapeHtml(user.username)}</span><div class="actions"><button class="btn-action btn-add" data-id="${user.id}">Thêm bạn</button></div>`;
             container.appendChild(div);
         });
     };
 
-    // --- Events ---
-    friendsBtn.addEventListener('click', () => {
-        friendsModal.style.display = 'block';
-        performSearch(''); // Load gợi ý khi mở modal
-    });
-
-    closeFriendsModalBtn.addEventListener('click', () => {
-        friendsModal.style.display = 'none';
-    });
-
-    // Lắng nghe gõ phím với cơ chế Debounce (Chờ 300ms sau khi ngừng gõ mới gọi API)
+    friendsBtn.addEventListener('click', () => { friendsModal.style.display = 'block'; performSearch(''); });
+    closeFriendsModalBtn.addEventListener('click', () => friendsModal.style.display = 'none');
     userSearchInput.addEventListener('input', (e) => {
         clearTimeout(searchTimeout);
         const query = e.target.value.trim();
-        searchTimeout = setTimeout(() => {
-            performSearch(query);
-        }, 300);
+        searchTimeout = setTimeout(() => performSearch(query), 300);
+    });
+}
+
+// ===================================
+// GROUP MANAGEMENT MODULE
+// ===================================
+
+function initializeGroupManagement() {
+    const createGroupModal = document.getElementById('createGroupModal');
+    const createGroupBtn = document.getElementById('createGroupBtn');
+    const closeGroupModalBtn = document.getElementById('closeGroupModalBtn');
+    const submitCreateGroupBtn = document.getElementById('submitCreateGroupBtn');
+    const memberSelectionList = document.getElementById('memberSelectionList');
+    const groupNameInput = document.getElementById('groupNameInput');
+    const myGroupsList = document.getElementById('myGroupsList');
+
+    let selectedUsers = new Set();
+
+    // 1. Mở Modal: Load đồng thời danh sách User (để tạo) và danh sách Nhóm (để vào)
+    createGroupBtn.addEventListener('click', async () => {
+        createGroupModal.style.display = 'block';
+        selectedUsers.clear();
+        groupNameInput.value = '';
+        
+        // Load danh sách user
+        const userRes = await fetch(`${API_BASE_URL}/api/users`, {
+            headers: { 'X-User-Id': userId, 'X-Session-Id': sessionId }
+        });
+        const userData = await userRes.json();
+        if (userData.success) renderSelectionList(userData.data);
+
+        // Load danh sách nhóm của tôi
+        loadMyGroups();
     });
 
-    // Tắt modal khi click ra ngoài
-    window.addEventListener('click', (e) => {
-        if (e.target === friendsModal) friendsModal.style.display = 'none';
+    // 2. Hàm Load danh sách nhóm tham gia
+    async function loadMyGroups() {
+        myGroupsList.innerHTML = '<p style="padding:10px;">Đang tải nhóm...</p>';
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/groups/my`, {
+                headers: { 'X-User-Id': userId, 'X-Session-Id': sessionId }
+            });
+            const resData = await response.json();
+            if (resData.success) {
+                renderMyGroups(resData.data);
+            }
+        } catch (error) {
+            console.error("Lỗi load nhóm:", error);
+            myGroupsList.innerHTML = '<p>Không thể tải danh sách nhóm.</p>';
+        }
+    }
+
+    // 3. Hiển thị danh sách nhóm và xử lý nút Truy cập
+    function renderMyGroups(groups) {
+        myGroupsList.innerHTML = groups.length === 0 ? '<p style="padding:10px;">Bạn chưa tham gia nhóm nào.</p>' : '';
+        groups.forEach(group => {
+            const div = document.createElement('div');
+            div.className = 'user-list-item';
+            div.style.justifyContent = 'space-between';
+            div.innerHTML = `
+                <span><b>#</b> ${escapeHtml(group.name)}</span>
+                <button class="btn-action btn-access" data-id="${group.id}" data-name="${group.name}">Truy cập</button>
+            `;
+            myGroupsList.appendChild(div);
+        });
+    }
+
+    // 4. Sự kiện khi nhấn Truy cập nhóm
+    myGroupsList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('btn-access')) {
+            const gId = e.target.getAttribute('data-id');
+            const gName = e.target.getAttribute('data-name');
+            
+            // Set ID nhóm vào ô người nhận
+            document.getElementById('recipientInput').value = gId; 
+            
+            // Thông báo trên màn hình chat
+            const msgContainer = document.getElementById('messagesContainer');
+            msgContainer.innerHTML = `<div class="welcome-message">🔔 Bạn đang chat trong nhóm: <b>${gName}</b> (ID: ${gId})</div>`;
+            
+            createGroupModal.style.display = 'none';
+        }
     });
+
+    // 5. Render danh sách chọn thành viên (Checkbox)
+    function renderSelectionList(users) {
+        memberSelectionList.innerHTML = '';
+        users.forEach(user => {
+            if(user.id === userId) return; // Không chọn chính mình
+            const item = document.createElement('div');
+            item.className = 'user-select-item';
+            item.innerHTML = `<span>👤 ${user.username}</span><input type="checkbox" value="${user.id}">`;
+            item.querySelector('input').addEventListener('change', (e) => {
+                if (e.target.checked) selectedUsers.add(user.id);
+                else selectedUsers.delete(user.id);
+            });
+            memberSelectionList.appendChild(item);
+        });
+    }
+
+    // 6. Gửi yêu cầu Tạo Nhóm
+    submitCreateGroupBtn.addEventListener('click', async () => {
+        const groupName = groupNameInput.value.trim();
+        if (!groupName) return alert("Vui lòng nhập tên nhóm!");
+
+        const requestBody = { name: groupName, memberIds: Array.from(selectedUsers) };
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/groups`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-User-Id': userId, 'X-Session-Id': sessionId },
+                body: JSON.stringify(requestBody)
+            });
+            const data = await response.json();
+            if (data.success) {
+                alert('🎉 ' + data.message);
+                loadMyGroups(); // Load lại danh sách nhóm bên phải
+                groupNameInput.value = '';
+            }
+        } catch (error) {
+            console.error("Lỗi tạo nhóm:", error);
+        }
+    });
+
+    closeGroupModalBtn.addEventListener('click', () => createGroupModal.style.display = 'none');
 }
 
 // ===================================
@@ -193,20 +287,11 @@ function initializeFriendsManagement() {
 
 function displayMessage(message) {
     const container = document.getElementById('messagesContainer');
-    const welcome = container.querySelector('.welcome-message');
-    if (welcome) welcome.remove();
-
     const div = document.createElement('div');
     div.className = `message ${message.from === currentUsername ? 'own' : ''}`;
-    
-    const time = message.timestamp ? formatTimestamp(message.timestamp) : 'Vừa xong';
-    const recipient = message.to ? `<span class="message-recipient">→ ${escapeHtml(message.to)}</span>` : '';
-
     div.innerHTML = `
         <div class="message-header">
             <span class="message-sender">${escapeHtml(message.from)}</span>
-            <span class="message-time">${time}</span>
-            ${recipient}
         </div>
         <div class="message-bubble">${escapeHtml(message.content)}</div>
     `;
@@ -217,28 +302,7 @@ function displayMessage(message) {
 function updateConnectionStatus(status) {
     const el = document.getElementById('connectionStatus');
     if (!el) return;
-    el.className = 'status-badge';
-    if (status === 'connecting') {
-        el.classList.add('status-connecting');
-        el.textContent = 'Đang kết nối...';
-    } else if (status === 'connected') {
-        el.classList.add('status-connected');
-        el.textContent = 'Đã kết nối';
-    } else {
-        el.classList.add('status-disconnected');
-        el.textContent = 'Mất kết nối';
-    }
-}
-
-function formatTimestamp(ts) {
-    const d = new Date(ts);
-    return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    el.textContent = status === 'connected' ? 'Đã kết nối' : 'Đang kết nối...';
 }
 
 function handleLogout() {
@@ -246,4 +310,10 @@ function handleLogout() {
         localStorage.clear();
         window.location.href = 'index.html';
     }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }

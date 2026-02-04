@@ -2,6 +2,7 @@ package com.hdtpt.pentachat.dataaccess;
 
 import org.springframework.stereotype.Component;
 import com.hdtpt.pentachat.datastore.MockDataStore;
+import com.hdtpt.pentachat.groups.model.Group; // Thêm import này
 import com.hdtpt.pentachat.transaction.model.Transaction;
 import com.hdtpt.pentachat.users.model.User;
 import com.hdtpt.pentachat.util.IdGenerator;
@@ -9,14 +10,10 @@ import com.hdtpt.pentachat.wallet.model.Wallet;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Mock implementation of DataApi
  * Uses MockDataStore for in-memory data storage
- * 
- * This implementation is used for development and testing
- * Later, replace with JpaDataApiImpl for production database
  */
 @Component
 public class MockDataApiImpl implements DataApi {
@@ -55,6 +52,28 @@ public class MockDataApiImpl implements DataApi {
     @Override
     public boolean userExists(String username) {
         return dataStore.userExists(username);
+    }
+
+    @Override
+    public List<User> searchUsers(String query) {
+        return dataStore.searchUsers(query);
+    }
+
+    // ============ GROUP OPERATIONS (PHẦN MỚI) ============
+    @Override
+    public Group saveGroup(Group group) {
+        // Ủy quyền việc lưu trữ cho dataStore
+        return dataStore.saveGroup(group);
+    }
+
+    @Override
+    public Group findGroupById(String groupId) {
+        return dataStore.findGroupById(groupId);
+    }
+
+    @Override
+    public List<Group> findGroupsByUserId(String userId) {
+        return dataStore.findGroupsByUserId(userId);
     }
 
     // ============ WALLET OPERATIONS ============
@@ -107,7 +126,6 @@ public class MockDataApiImpl implements DataApi {
     }
 
     // ============ MESSAGE OPERATIONS ============
-
     @Override
     public com.hdtpt.pentachat.message.model.Message createMessage(String fromUserId, String toUserId, String content) {
         LocalDateTime now = LocalDateTime.now();
@@ -145,11 +163,6 @@ public class MockDataApiImpl implements DataApi {
     }
 
     // ============ INITIALIZATION ============
-    /**
-     * 
-     * Initialize with mock data for development
-     * 
-     */
     private void initializeMockData() {
         // Create mock users
         User user1 = createUser("alice", "password123");
@@ -168,12 +181,5 @@ public class MockDataApiImpl implements DataApi {
                 user2.getId(),
                 null,
                 250.0);
-    }
-
-    // ============ SEARCH OPERATIONS ============
-    @Override
-    public List<User> searchUsers(String query) {
-        // Gọi hàm searchUsers từ dataStore thay vì tự xử lý
-        return dataStore.searchUsers(query);
     }
 }
