@@ -105,9 +105,6 @@ public interface DataApi {
      * Delete a message by ID
      */
     void deleteMessage(String messageId);
-<<<<<<< HEAD
 
     List<User> searchUsers(String query);
-=======
->>>>>>> c99ecabafa9ac82c979d4fa63bf5d7254224336b
 }
