@@ -187,9 +187,12 @@ public class JpaDataApiImpl implements DataApi {
     public void deleteMessage(String messageId) {
         messageRepo.deleteById(messageId);
     }
+<<<<<<< HEAD
 
     @Override
     public List<User> searchUsers(String query) {
         return userRepo.findByUsernameContainingIgnoreCase(query);
     }
+=======
+>>>>>>> c99ecabafa9ac82c979d4fa63bf5d7254224336b
 }

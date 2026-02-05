@@ -9,7 +9,10 @@ import com.hdtpt.pentachat.wallet.model.Wallet;
 
 import java.time.LocalDateTime;
 import java.util.List;
+<<<<<<< HEAD
 import java.util.stream.Collectors;
+=======
+>>>>>>> c99ecabafa9ac82c979d4fa63bf5d7254224336b
 
 /**
  * Mock implementation of DataApi
@@ -169,6 +172,7 @@ public class MockDataApiImpl implements DataApi {
                 null,
                 250.0);
     }
+<<<<<<< HEAD
 
     // ============ SEARCH OPERATIONS ============
     @Override
@@ -176,4 +180,6 @@ public class MockDataApiImpl implements DataApi {
         // Gọi hàm searchUsers từ dataStore thay vì tự xử lý
         return dataStore.searchUsers(query);
     }
+=======
+>>>>>>> c99ecabafa9ac82c979d4fa63bf5d7254224336b
 }
