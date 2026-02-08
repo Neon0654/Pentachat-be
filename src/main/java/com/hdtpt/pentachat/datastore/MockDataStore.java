@@ -185,6 +185,23 @@ public class MockDataStore {
         return new ArrayList<>(messages);
     }
 
+    /**
+     * Find messages by targetId and type
+     */
+    public List<com.hdtpt.pentachat.message.model.Message> findMessagesByTargetIdAndType(String targetId, String type) {
+        try {
+            com.hdtpt.pentachat.message.model.Message.MessageType messageType = 
+                com.hdtpt.pentachat.message.model.Message.MessageType.valueOf(type.toUpperCase());
+            return messages.stream()
+                    .filter(m -> m.getTargetId() != null && 
+                                m.getTargetId().equals(targetId) &&
+                                m.getType() == messageType)
+                    .toList();
+        } catch (IllegalArgumentException e) {
+            return new ArrayList<>();
+        }
+    }
+
     // ============ DATA RESET ============
 
     /**

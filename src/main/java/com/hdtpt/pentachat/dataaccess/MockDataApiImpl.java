@@ -143,6 +143,33 @@ public class MockDataApiImpl implements DataApi {
         dataStore.deleteMessage(messageId);
     }
 
+    @Override
+    public com.hdtpt.pentachat.message.model.Message createGroupMessage(String fromUserId, String groupId, String content) {
+        LocalDateTime now = LocalDateTime.now();
+        com.hdtpt.pentachat.message.model.Message message = com.hdtpt.pentachat.message.model.Message.builder()
+                .id(IdGenerator.generateId())
+                .fromUserId(fromUserId)
+                .type(com.hdtpt.pentachat.message.model.Message.MessageType.GROUP)
+                .targetId(groupId)
+                .content(content)
+                .createdAt(now)
+                .updatedAt(now)
+                .isRead(false)
+                .build();
+        dataStore.addMessage(message);
+        return message;
+    }
+
+    @Override
+    public List<com.hdtpt.pentachat.message.model.Message> getGroupHistory(String groupId) {
+        return dataStore.findMessagesByTargetIdAndType(groupId, "GROUP");
+    }
+
+    @Override
+    public List<com.hdtpt.pentachat.message.model.Message> getMessagesByTargetIdAndType(String targetId, String type) {
+        return dataStore.findMessagesByTargetIdAndType(targetId, type);
+    }
+
     // ============ INITIALIZATION ============
     /**
      * 

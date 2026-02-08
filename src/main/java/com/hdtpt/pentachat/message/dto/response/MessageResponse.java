@@ -13,7 +13,14 @@ import java.time.LocalDateTime;
 public class MessageResponse {
     private String id;
     private String from;
+    
+    // For backward compatibility
     private String to;
+    
+    // For group messages
+    private String targetId;  // userId for PERSONAL, groupId for GROUP
+    private String type;       // PERSONAL or GROUP
+    
     private String content;
     private LocalDateTime createdAt;
     private Boolean isRead;

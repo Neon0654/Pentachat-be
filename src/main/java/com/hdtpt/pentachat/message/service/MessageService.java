@@ -124,14 +124,113 @@ public class MessageService {
         }
 
         return messages.stream()
-                .map(m -> MessageResponse.builder()
-                        .id(m.getId())
-                        .from(m.getFromUserId())
-                        .to(m.getToUserId())
-                        .content(m.getContent())
-                        .createdAt(m.getCreatedAt())
-                        .isRead(m.getIsRead())
-                        .build())
+                .map(m -> {
+                    MessageResponse.MessageResponseBuilder builder = MessageResponse.builder()
+                            .id(m.getId())
+                            .from(m.getFromUserId())
+                            .content(m.getContent())
+                            .createdAt(m.getCreatedAt())
+                            .isRead(m.getIsRead());
+
+                    // Support both personal and group messages
+                    if (m.getType() != null) {
+                        builder.type(m.getType().toString())
+                               .targetId(m.getTargetId());
+                    }
+
+                    // For backward compatibility
+                    if (m.getToUserId() != null) {
+                        builder.to(m.getToUserId());
+                    } else if (m.getTargetId() != null && 
+                               m.getType() == Message.MessageType.PERSONAL) {
+                        builder.to(m.getTargetId());
+                    }
+
+                    return builder.build();
+                })
                 .toList();
+    }
+
+    /**
+     * Gửi tin nhắn nhóm
+     * 
+     * @param fromUserId User ID của người gửi
+     * @param groupId    Group ID của nhóm đích
+     * @param content    Nội dung tin nhắn
+     * @return MessageResponse - Tin nhắn vừa được gửi
+     */
+    public MessageResponse pushToGroup(String fromUserId, String groupId, String content) {
+        try {
+            // Validate
+            if (fromUserId == null || fromUserId.isEmpty()) {
+                throw new IllegalArgumentException("fromUserId cannot be empty");
+            }
+            if (groupId == null || groupId.isEmpty()) {
+                throw new IllegalArgumentException("groupId cannot be empty");
+            }
+            if (content == null || content.isEmpty()) {
+                throw new IllegalArgumentException("content cannot be empty");
+            }
+
+            // Tạo group message trong database
+            Message message = dataApi.createGroupMessage(fromUserId, groupId, content);
+
+            // Convert to MessageResponse
+            MessageResponse response = MessageResponse.builder()
+                    .id(message.getId())
+                    .from(message.getFromUserId())
+                    .targetId(message.getTargetId())
+                    .type(message.getType().toString())
+                    .content(message.getContent())
+                    .createdAt(message.getCreatedAt())
+                    .isRead(message.getIsRead())
+                    .build();
+
+            log.info("Group message pushed to group {} from user {}: {}", groupId, fromUserId, content);
+
+            // Notify all group members about new message
+            notifyGroupNewMessage(groupId, response);
+
+            return response;
+
+        } catch (Exception e) {
+            log.error("Error pushing group message to group {}: {}", groupId, e.getMessage());
+            throw new RuntimeException("Failed to send group message: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Lấy lịch sử tin nhắn của một nhóm
+     * 
+     * @param groupId ID của nhóm
+     * @return List<MessageResponse> - Danh sách tin nhắn trong nhóm
+     */
+    public List<MessageResponse> getGroupHistory(String groupId) {
+        try {
+            if (groupId == null || groupId.isEmpty()) {
+                throw new IllegalArgumentException("groupId cannot be empty");
+            }
+
+            List<Message> messages = dataApi.getGroupHistory(groupId);
+            log.info("Retrieved {} messages from group {}", messages.size(), groupId);
+            
+            return convertToResponseList(messages);
+
+        } catch (Exception e) {
+            log.error("Error retrieving group history for group {}: {}", groupId, e.getMessage());
+            throw new RuntimeException("Failed to retrieve group history: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Thông báo cho tất cả members trong group có tin nhắn mới
+     * (Đây là nơi bạn có thể integrate WebSocket để push real-time)
+     */
+    private void notifyGroupNewMessage(String groupId, MessageResponse message) {
+        log.info("🔔 GROUP NOTIFICATION: Group {} has new message from {} - '{}'",
+                groupId, message.getFrom(), message.getContent());
+
+        // TODO: Implement WebSocket notification for group here
+        // example: webSocketService.sendToGroup(groupId, message);
     }
 }

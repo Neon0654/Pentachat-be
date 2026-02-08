@@ -105,4 +105,19 @@ public interface DataApi {
      * Delete a message by ID
      */
     void deleteMessage(String messageId);
+
+    /**
+     * Create and save a group message
+     */
+    Message createGroupMessage(String fromUserId, String groupId, String content);
+
+    /**
+     * Get all messages in a group (history)
+     */
+    List<Message> getGroupHistory(String groupId);
+
+    /**
+     * Get messages by target ID and type
+     */
+    List<Message> getMessagesByTargetIdAndType(String targetId, String type);
 }

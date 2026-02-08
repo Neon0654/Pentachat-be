@@ -187,4 +187,39 @@ public class JpaDataApiImpl implements DataApi {
     public void deleteMessage(String messageId) {
         messageRepo.deleteById(messageId);
     }
+
+    // ================= GROUP MESSAGE =================
+
+    @Override
+    @Transactional
+    public Message createGroupMessage(String fromUserId, String groupId, String content) {
+        LocalDateTime now = LocalDateTime.now();
+        Message message = Message.builder()
+                .id(IdGenerator.generateId())
+                .fromUserId(fromUserId)
+                .type(Message.MessageType.GROUP)
+                .targetId(groupId)
+                .content(content)
+                .createdAt(now)
+                .updatedAt(now)
+                .isRead(false)
+                .build();
+
+        return messageRepo.save(message);
+    }
+
+    @Override
+    public List<Message> getGroupHistory(String groupId) {
+        return messageRepo.findGroupHistory(groupId);
+    }
+
+    @Override
+    public List<Message> getMessagesByTargetIdAndType(String targetId, String type) {
+        try {
+            Message.MessageType messageType = Message.MessageType.valueOf(type.toUpperCase());
+            return messageRepo.findByTargetIdAndType(targetId, messageType);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid message type: " + type);
+        }
+    }
 }
