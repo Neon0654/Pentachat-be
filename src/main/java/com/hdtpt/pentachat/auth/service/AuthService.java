@@ -6,6 +6,7 @@ import com.hdtpt.pentachat.dataaccess.DataApi;
 import com.hdtpt.pentachat.exception.AppException;
 import com.hdtpt.pentachat.security.SessionManager;
 import com.hdtpt.pentachat.users.model.User;
+import com.hdtpt.pentachat.profile.service.ProfileService;
 
 /**
  * Authentication service
@@ -17,9 +18,11 @@ import com.hdtpt.pentachat.users.model.User;
 @Service
 public class AuthService {
     private final DataApi dataApi;
+    private final ProfileService profileService;
 
-    public AuthService(DataApi dataApi) {
+    public AuthService(DataApi dataApi, ProfileService profileService) {
         this.dataApi = dataApi;
+        this.profileService = profileService;
     }
 
     /**
@@ -48,6 +51,9 @@ public class AuthService {
         User newUser = dataApi.createUser(username, password);
 
         // Create wallet for new user with initial balance 0
+        // Create profile for new user
+        profileService.createProfile(newUser.getId());
+
         dataApi.createWallet(newUser.getId(), 0.0);
 
         return newUser;
