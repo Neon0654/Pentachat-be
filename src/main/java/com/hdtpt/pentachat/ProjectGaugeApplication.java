@@ -1,26 +1,23 @@
 package com.hdtpt.pentachat;
 
+import com.hdtpt.pentachat.games.service.GameService; // <-- Import Service
+import org.springframework.boot.CommandLineRunner;     // <-- Import Runner
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;    // <-- Import Bean
 
-/**
- * Spring Boot RESTful API Application
- * 
- * Features:
- * - User Authentication (Register, Login)
- * - Wallet Management (Deposit, Withdraw, Transfer, Balance)
- * - Transaction History
- * 
- * Architecture:
- * - Layered Architecture: Controller → Service → Data Access
- * - Business logic is independent of data source (mock or database)
- * - Clean separation of concerns with DataApi interface abstraction
- */
 @SpringBootApplication
 public class ProjectGaugeApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(ProjectGaugeApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ProjectGaugeApplication.class, args);
+    }
 
+    // --- ĐOẠN CODE TỰ ĐỘNG TẠO GAME MINI ---
+    @Bean
+    CommandLineRunner initData(GameService gameService) {
+        return args -> {
+            gameService.createDummyGames(); // Tự động tạo Cờ Caro, Rắn săn mồi...
+        };
+    }
 }

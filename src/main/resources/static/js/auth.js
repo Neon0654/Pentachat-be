@@ -94,8 +94,7 @@ async function handleRegister(username, password) {
             },
             body: JSON.stringify({ username, password })
         });
-
-        const data = await response.json();
+const data = await response.json();
 
         if (response.ok && data.success) {
             alert('✅ Đăng ký thành công! Bây giờ bạn có thể đăng nhập.');

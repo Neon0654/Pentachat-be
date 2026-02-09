@@ -45,6 +45,12 @@
                     <span class="btn-text">Đăng Nhập</span>
                     <span class="btn-loader" style="display: none;">⏳</span>
                 </button>
+
+                <div style="text-align: right; margin-top: 15px; margin-bottom: 10px;">
+                    <a href="#" id="btnForgotPassword" style="color: #bbb; font-size: 0.9em; text-decoration: none;">
+                        Quên mật khẩu?
+                    </a>
+                </div>
             </form>
 
             <div class="divider">
@@ -67,5 +73,42 @@
     </div>
 
     <script src="js/auth.js"></script>
+
+    <script>
+        document.getElementById('btnForgotPassword').addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            // 1. Hiện hộp thoại hỏi Username
+            const username = prompt("Nhập Username của bạn để lấy lại mật khẩu:");
+            
+            if (username) {
+                // 2. Gọi API gửi mail
+                try {
+                    // Thông báo nhẹ để người dùng biết đang xử lý
+                    // (Tùy chọn: Có thể dùng alert hoặc console.log)
+                    console.log("Đang gửi yêu cầu..."); 
+                    
+                    const response = await fetch('/api/auth/forgot-password', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username: username })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        alert("✅ Thành công! " + data.message);
+                    } else {
+                        alert("❌ Lỗi: " + (data.message || "Có lỗi xảy ra"));
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert("❌ Không thể kết nối đến Server!");
+                }
+            }
+        });
+    </script>
 </body>
 </html>

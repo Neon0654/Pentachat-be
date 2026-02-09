@@ -32,4 +32,7 @@ public class User {
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "email")
+    private String email;
 }
