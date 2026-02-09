@@ -49,6 +49,10 @@ public class GameRoomService {
     }
 
     public Room getRoom(Long roomId) {
-        return rooms.get(roomId);
+        Room room = rooms.get(roomId);
+        if (room == null) {
+            throw new RuntimeException("Room khÃ´ng tá»“n táº¡i");
+        }
+        return room;
     }
 }
