@@ -18,6 +18,63 @@
             </div>
             <div class="header-right">
                 <span class="username-display">👤 <span id="currentUsername">Loading...</span></span>
+                
+                <button id="gamesBtn" class="btn">🎮Trò chơi</button>
+                <div id="gameModal" class="modal">
+                    <div class="modal-content gaming-theme">
+                        <div class="modal-header">
+                            <div class="header-title">
+                                <span class="icon">🎮</span>
+                                <h2>Khu Vực Trò Chơi</h2>
+                            </div>
+                            <span id="closeGameModalBtn" class="close-x">&times;</span>
+                        </div>
+
+                        <div id="gameSelectionSection">
+                            <p class="section-hint">Chọn một trò chơi để tạo sảnh:</p>
+                            <div class="game-grid">
+                                <div class="game-card" data-game="Chess">
+                                    <span class="game-icon">♟️</span>
+                                    <span class="game-name">Cờ Vua</span>
+                                </div>
+                                <div class="game-card" data-game="Caro">
+                                    <span class="game-icon">⭕</span>
+                                    <span class="game-name">Cờ Caro</span>
+                                </div>
+                                <div class="game-card" data-game="Poker">
+                                    <span class="game-icon">🃏</span>
+                                    <span class="game-name">Poker</span>
+                                </div>
+                                <div class="game-card" data-game="Mines">
+                                    <span class="game-icon">💣</span>
+                                    <span class="game-name">Dò Mìn</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="gameRoomSection" style="display: none;">
+                            <div class="room-status-bar">
+                                <button id="backToGamesBtn" class="btn-back">⬅ Đổi Game</button>
+                                <div class="room-info">
+                                    Đang ở phòng: <span id="currentRoomDisplay" class="text-highlight"></span>
+                                </div>
+                            </div>
+
+                            <div class="lobby-columns">
+                                <div class="lobby-column">
+                                    <h4 class="column-title">Mời bạn bè</h4>
+                                    <div id="friendsToInviteList" class="user-list-container custom-scroll"></div>
+                                </div>
+                                <div class="lobby-column">
+                                    <h4 class="column-title">Đã vào phòng</h4>
+                                    <div id="joinedMembersList" class="user-list-container custom-scroll"></div>
+                                </div>
+                            </div>
+                            <button id="startGameBtn" class="shiny-start-btn">BẮT ĐẦU CHƠI</button>
+                        </div>
+                    </div>
+                </div>
+                <button id="friendsBtn" class="btn">Tìm bạn bè</button> <!-- Nút mới -->
                 <button id="logoutBtn" class="btn btn-logout">Đăng Xuất</button>
             </div>
         </div>
@@ -45,6 +102,30 @@
             </form>
         </div>
     </div>
+
+    <!-- Friends Modal -->
+    <div id="friendsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Tìm kiếm bạn bè</h2>
+                <span class="close-btn" id="closeFriendsModalBtn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="friends-section">
+
+                    <div class="search-box" style="margin-bottom: 15px;">
+                        <input type="text" id="userSearchInput" placeholder="Nhập username để tìm..."
+                            class="input-recipient" style="width: 100%;">
+                    </div>
+                    <div id="allUsersList" class="user-list">
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
 
     <!-- WebSocket Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>

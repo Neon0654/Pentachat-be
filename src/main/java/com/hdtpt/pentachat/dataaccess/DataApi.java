@@ -120,4 +120,6 @@ public interface DataApi {
      * Get messages by target ID and type
      */
     List<Message> getMessagesByTargetIdAndType(String targetId, String type);
+
+    List<User> searchUsers(String query);
 }

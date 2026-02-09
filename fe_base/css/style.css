@@ -559,6 +559,134 @@ body {
 }
 
 /* ===================================
+<<<<<<< HEAD
+   FRIENDS MODAL STYLES
+   =================================== */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background-color: var(--bg-secondary);
+    margin: 10% auto;
+    padding: var(--spacing-lg);
+    border: 1px solid var(--border-color);
+    width: 90%;
+    max-width: 600px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    animation: slideDown 0.4s ease-out;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.modal-header h2 {
+    color: var(--primary-color);
+}
+
+.close-btn {
+    color: var(--text-secondary);
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: var(--text-primary);
+}
+
+.friends-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.friends-section h3 {
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: var(--spacing-xs);
+}
+
+.user-list {
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: var(--spacing-xs); /* For scrollbar */
+}
+
+.user-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    transition: background-color 0.2s ease;
+}
+
+.user-list-item:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.user-list-item:hover {
+    background-color: rgba(102, 126, 234, 0.1);
+}
+
+.user-list-item .username {
+    font-weight: 600;
+}
+
+.user-list-item .actions {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.user-list-item .btn-action {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-add {
+    background-color: var(--success-color);
+    color: white;
+}
+.btn-add:hover { background-color: #15803d; }
+
+.btn-accept {
+    background-color: var(--primary-color);
+    color: white;
+}
+.btn-accept:hover { background-color: var(--primary-dark); }
+
+.btn-reject, .btn-unfriend {
+    background-color: var(--error-color);
+    color: white;
+}
+.btn-reject:hover, .btn-unfriend:hover { background-color: #b91c1c; }
+
+
+/* ===================================
+=======
+>>>>>>> c99ecabafa9ac82c979d4fa63bf5d7254224336b
    RESPONSIVE DESIGN
    =================================== */
 @media (max-width: 768px) {
@@ -589,4 +717,20 @@ body {
     .btn-send {
         width: 100%;
     }
+<<<<<<< HEAD
+
+    .modal-content {
+        margin: 5% auto;
+        width: 95%;
+    }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+=======
+>>>>>>> c99ecabafa9ac82c979d4fa63bf5d7254224336b
 }

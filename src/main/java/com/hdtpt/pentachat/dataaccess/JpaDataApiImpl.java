@@ -222,4 +222,9 @@ public class JpaDataApiImpl implements DataApi {
             throw new RuntimeException("Invalid message type: " + type);
         }
     }
+
+    @Override
+    public List<User> searchUsers(String query) {
+        return userRepo.findByUsernameContainingIgnoreCase(query);
+    }
 }

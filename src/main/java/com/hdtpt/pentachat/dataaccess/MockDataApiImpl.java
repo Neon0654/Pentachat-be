@@ -9,6 +9,7 @@ import com.hdtpt.pentachat.wallet.model.Wallet;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Mock implementation of DataApi
@@ -194,5 +195,12 @@ public class MockDataApiImpl implements DataApi {
                 user2.getId(),
                 null,
                 250.0);
+    }
+
+    // ============ SEARCH OPERATIONS ============
+    @Override
+    public List<User> searchUsers(String query) {
+        // Gọi hàm searchUsers từ dataStore thay vì tự xử lý
+        return dataStore.searchUsers(query);
     }
 }
