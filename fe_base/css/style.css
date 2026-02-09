@@ -560,6 +560,9 @@ body {
 
 /* ===================================
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/create_group
    FRIENDS MODAL STYLES
    =================================== */
 .modal {
@@ -685,8 +688,11 @@ body {
 
 
 /* ===================================
+<<<<<<< HEAD
 =======
 >>>>>>> c99ecabafa9ac82c979d4fa63bf5d7254224336b
+=======
+>>>>>>> origin/create_group
    RESPONSIVE DESIGN
    =================================== */
 @media (max-width: 768px) {
@@ -718,6 +724,9 @@ body {
         width: 100%;
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/create_group
 
     .modal-content {
         margin: 5% auto;
@@ -731,6 +740,9 @@ body {
 @keyframes slideDown {
     from { transform: translateY(-50px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
+<<<<<<< HEAD
 =======
 >>>>>>> c99ecabafa9ac82c979d4fa63bf5d7254224336b
+=======
+>>>>>>> origin/create_group
 }

@@ -10,7 +10,6 @@
 
 <body>
     <div class="chat-container">
-        <!-- Header -->
         <div class="chat-header">
             <div class="header-left">
                 <h2>💬 PentaChat</h2>
@@ -75,11 +74,12 @@
                     </div>
                 </div>
                 <button id="friendsBtn" class="btn">Tìm bạn bè</button> <!-- Nút mới -->
+                <button id="createGroupBtn" class="btn">Quản lý Nhóm</button>
+                <button id="friendsBtn" class="btn">Tìm bạn bè</button>
                 <button id="logoutBtn" class="btn btn-logout">Đăng Xuất</button>
             </div>
         </div>
 
-        <!-- Messages Area -->
         <div class="messages-container" id="messagesContainer">
             <div class="welcome-message">
                 <h3>🎉 Chào mừng đến với PentaChat!</h3>
@@ -87,10 +87,9 @@
             </div>
         </div>
 
-        <!-- Input Area -->
         <div class="chat-input-container">
             <form id="messageForm" class="message-form">
-                <input type="text" id="recipientInput" placeholder="Người nhận (để trống = gửi cho tất cả)"
+                <input type="text" id="recipientInput" placeholder="Người nhận (ID người dùng hoặc ID nhóm)"
                     class="input-recipient">
                 <div class="input-wrapper">
                     <input type="text" id="messageInput" placeholder="Nhập tin nhắn của bạn..." required
@@ -127,7 +126,59 @@
     </div>
 
 
-    <!-- WebSocket Libraries -->
+    <div id="friendsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Tìm kiếm bạn bè</h2>
+                <span class="close-btn" id="closeFriendsModalBtn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="friends-section">
+                    <div class="search-box" style="margin-bottom: 15px;">
+                        <input type="text" id="userSearchInput" placeholder="Nhập username để tìm..."
+                            class="input-recipient" style="width: 100%;">
+                    </div>
+                    <div id="allUsersList" class="user-list">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="createGroupModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;"> <div class="modal-header">
+                <h2>Quản lý Nhóm Chat</h2>
+                <span class="close-btn" id="closeGroupModalBtn">&times;</span>
+            </div>
+            <div class="modal-body" style="display: flex; gap: 30px; align-items: flex-start;">
+                
+                <div class="group-creation-side" style="flex: 1; border-right: 1px solid #ddd; padding-right: 20px;">
+                    <h3>➕ Tạo Nhóm Mới</h3>
+                    <div class="form-group" style="margin: 15px 0;">
+                        <label for="groupNameInput">Tên nhóm</label>
+                        <input type="text" id="groupNameInput" placeholder="Nhập tên nhóm..." class="input-recipient" style="width: 100%;">
+                    </div>
+                    
+                    <div class="friends-section">
+                        <label>Chọn thành viên</label>
+                        <div id="memberSelectionList" class="user-list" style="max-height: 200px; overflow-y: auto; margin-top: 10px; border: 1px solid #eee;">
+                        </div>
+                    </div>
+                    
+                    <button id="submitCreateGroupBtn" class="btn btn-primary" style="width: 100%; margin-top: 20px;">🚀 Tạo Nhóm</button>
+                </div>
+
+                <div class="group-list-side" style="flex: 1;">
+                    <h3>👥 Nhóm Của Tôi</h3>
+                    <p style="font-size: 0.85em; color: #666; margin-bottom: 10px;">Chỉ các nhóm bạn là thành viên mới hiển thị ở đây.</p>
+                    <div id="myGroupsList" class="user-list" style="max-height: 320px; overflow-y: auto; border: 1px solid #eee;">
+                        </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
     <script src="js/chat.js"></script>

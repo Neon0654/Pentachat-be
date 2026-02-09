@@ -5,7 +5,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hdtpt.pentachat.message.model.Message;
+import com.hdtpt.pentachat.groups.model.Group;
+import com.hdtpt.pentachat.groups.repository.GroupRepository;import com.hdtpt.pentachat.message.model.Message;
 import com.hdtpt.pentachat.message.repository.MessageRepository;
 import com.hdtpt.pentachat.transaction.model.Transaction;
 import com.hdtpt.pentachat.transaction.repository.TransactionRepository;
@@ -22,28 +23,28 @@ import java.util.Objects;
 /**
  * JPA implementation of DataApi
  * Uses Spring Data JPA repositories for database operations
- * 
- * This implementation is used for production database access
  */
-
 @Repository
-@Primary // Spring sẽ ưu tiên dùng DB thay vì Mock
+@Primary // Spring sẽ ưu tiên dùng DB này thay vì Mock khi chạy ứng dụng
 public class JpaDataApiImpl implements DataApi {
 
     private final UserRepository userRepo;
     private final WalletRepository walletRepo;
     private final TransactionRepository txRepo;
     private final MessageRepository messageRepo;
+    private final GroupRepository groupRepo; // Thêm GroupRepository
 
     public JpaDataApiImpl(
             UserRepository userRepo,
             WalletRepository walletRepo,
             TransactionRepository txRepo,
-            MessageRepository messageRepo) {
+            MessageRepository messageRepo,
+            GroupRepository groupRepo) { // Inject GroupRepository vào đây
         this.userRepo = userRepo;
         this.walletRepo = walletRepo;
         this.txRepo = txRepo;
         this.messageRepo = messageRepo;
+        this.groupRepo = groupRepo;
     }
 
     // ================= USER =================
@@ -79,6 +80,30 @@ public class JpaDataApiImpl implements DataApi {
         return userRepo.findByUsername(username).isPresent();
     }
 
+    @Override
+    public List<User> searchUsers(String query) {
+        return userRepo.findByUsernameContainingIgnoreCase(query);
+    }
+
+    // ================= GROUP (PHẦN MỚI BỔ SUNG) =================
+
+    @Override
+    @Transactional
+    public Group saveGroup(Group group) {
+        return groupRepo.save(group);
+    }
+
+    @Override
+    public Group findGroupById(String groupId) {
+        return groupRepo.findById(groupId).orElse(null);
+    }
+
+    @Override
+    public List<Group> findGroupsByUserId(String userId) {
+        // Gọi hàm findByMemberId đã định nghĩa trong GroupRepository
+        return groupRepo.findByMemberId(userId);
+    }
+
     // ================= WALLET =================
 
     @Override
@@ -92,14 +117,13 @@ public class JpaDataApiImpl implements DataApi {
     public void updateWalletBalance(String userId, Double newBalance) {
         Wallet wallet = getWalletByUserId(userId);
         wallet.setBalance(newBalance);
-        // Không cần save() – Hibernate tự flush
     }
 
     @Override
     @Transactional
     public void createWallet(String userId, Double initialBalance) {
         if (walletRepo.existsById(userId)) {
-            return; // tránh tạo trùng wallet
+            return;
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -167,7 +191,6 @@ public class JpaDataApiImpl implements DataApi {
 
     @Override
     public List<Message> getConversationBetweenUsers(String userId1, String userId2) {
-        // Tìm tất cả messages giữa 2 users (cả 2 chiều)
         return messageRepo.findByFromUserIdAndToUserIdOrToUserIdAndFromUserId(
                 userId1, userId2,
                 userId1, userId2);
@@ -179,7 +202,6 @@ public class JpaDataApiImpl implements DataApi {
         Message message = messageRepo.findById(messageId)
                 .orElseThrow(() -> new RuntimeException("Message not found: " + messageId));
         message.setIsRead(true);
-        // Không cần save() – Hibernate tự flush
     }
 
     @Override
@@ -187,6 +209,7 @@ public class JpaDataApiImpl implements DataApi {
     public void deleteMessage(String messageId) {
         messageRepo.deleteById(messageId);
     }
+<<<<<<< HEAD
 
     // ================= GROUP MESSAGE =================
 
@@ -228,3 +251,6 @@ public class JpaDataApiImpl implements DataApi {
         return userRepo.findByUsernameContainingIgnoreCase(query);
     }
 }
+=======
+}
+>>>>>>> origin/create_group
