@@ -1,19 +1,17 @@
 package com.hdtpt.pentachat.friend.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import java.time.LocalDateTime;
+import com.hdtpt.pentachat.util.BaseEntity;
 
 /**
  * FriendRequest Entity - Quản lý yêu cầu kết bạn
  * 
- * Status: PENDING (chờ chấp nhận), ACCEPTED (đã chấp nhận), REJECTED (bị từ chối)
+ * Status: PENDING (chờ chấp nhận), ACCEPTED (đã chấp nhận), REJECTED (bị từ
+ * chối)
  */
 @Entity
 @Table(name = "friend_requests")
@@ -21,23 +19,18 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FriendRequest {
+public class FriendRequest extends BaseEntity{
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
-    private String fromUserId;
+    private Long fromUserId;
 
     @Column(nullable = false)
-    private String toUserId;
+    private Long toUserId;
 
     @Column(nullable = false)
     private String status; // PENDING, ACCEPTED, REJECTED
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
 }

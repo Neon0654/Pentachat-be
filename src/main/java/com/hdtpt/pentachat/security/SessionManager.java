@@ -13,16 +13,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SessionManager {
 
     // Map để lưu userId -> session info
-    private static final Map<String, SessionInfo> userSessions = new ConcurrentHashMap<>();
+    private static final Map<Long, SessionInfo> userSessions = new ConcurrentHashMap<>();
 
     /**
      * Tạo session mới cho user
-     * 
-     * @param userId   ID của user
-     * @param username Username của user
-     * @return sessionId được generate
      */
-    public static String createSession(String userId, String username) {
+    public static String createSession(Long userId, String username) {
         String sessionId = "ses_" + java.util.UUID.randomUUID().toString();
         userSessions.put(userId, new SessionInfo(userId, sessionId, true));
         return sessionId;
@@ -31,28 +27,28 @@ public class SessionManager {
     /**
      * Lưu session của user
      */
-    public static void addUserSession(String userId, String sessionId) {
+    public static void addUserSession(Long userId, String sessionId) {
         userSessions.put(userId, new SessionInfo(userId, sessionId, true));
     }
 
     /**
      * Xóa session của user (user logout)
      */
-    public static void removeUserSession(String userId) {
+    public static void removeUserSession(Long userId) {
         userSessions.remove(userId);
     }
 
     /**
      * Lấy session info của user
      */
-    public static SessionInfo getUserSession(String userId) {
+    public static SessionInfo getUserSession(Long userId) {
         return userSessions.get(userId);
     }
 
     /**
      * Kiểm tra user có online không
      */
-    public static boolean isUserOnline(String userId) {
+    public static boolean isUserOnline(Long userId) {
         SessionInfo session = userSessions.get(userId);
         return session != null && session.isOnline;
     }
@@ -60,7 +56,7 @@ public class SessionManager {
     /**
      * Lấy tất cả active sessions
      */
-    public static Map<String, SessionInfo> getAllSessions() {
+    public static Map<Long, SessionInfo> getAllSessions() {
         return new ConcurrentHashMap<>(userSessions);
     }
 
@@ -68,11 +64,11 @@ public class SessionManager {
      * Inner class để lưu session info
      */
     public static class SessionInfo {
-        public String userId;
+        public Long userId;
         public String sessionId;
         public boolean isOnline;
 
-        public SessionInfo(String userId, String sessionId, boolean isOnline) {
+        public SessionInfo(Long userId, String sessionId, boolean isOnline) {
             this.userId = userId;
             this.sessionId = sessionId;
             this.isOnline = isOnline;
@@ -81,7 +77,7 @@ public class SessionManager {
         @Override
         public String toString() {
             return "SessionInfo{" +
-                    "userId='" + userId + '\'' +
+                    "userId=" + userId +
                     ", sessionId='" + sessionId + '\'' +
                     ", isOnline=" + isOnline +
                     '}';

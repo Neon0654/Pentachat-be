@@ -1,6 +1,6 @@
 package com.hdtpt.pentachat.message.service;
 
-import com.hdtpt.pentachat.dataaccess.DataApi;
+import com.hdtpt.pentachat.message.repository.MessageRepository;
 import com.hdtpt.pentachat.message.dto.response.MessageResponse;
 import com.hdtpt.pentachat.message.model.Message;
 
@@ -19,10 +19,10 @@ import java.util.List;
 @Slf4j
 public class MessageService {
 
-    private final DataApi dataApi;
+    private final MessageRepository messageRepository;
 
-    public MessageService(DataApi dataApi) {
-        this.dataApi = dataApi;
+    public MessageService(MessageRepository messageRepository) {
+        this.messageRepository = messageRepository;
     }
 
     /**
@@ -33,27 +33,34 @@ public class MessageService {
      * @param content    Nội dung tin nhắn
      * @return MessageResponse - Tin nhắn vừa được gửi
      */
-    public MessageResponse pushToUser(String fromUserId, String toUserId, String content) {
+    public MessageResponse pushToUser(Long fromUserId, Long toUserId, String content) {
         try {
             // Validate
-            if (fromUserId == null || fromUserId.isEmpty()) {
-                throw new IllegalArgumentException("fromUserId cannot be empty");
+            if (fromUserId == null) {
+                throw new IllegalArgumentException("fromUserId cannot be null");
             }
-            if (toUserId == null || toUserId.isEmpty()) {
-                throw new IllegalArgumentException("toUserId cannot be empty");
+            if (toUserId == null) {
+                throw new IllegalArgumentException("toUserId cannot be null");
             }
             if (content == null || content.isEmpty()) {
                 throw new IllegalArgumentException("content cannot be empty");
             }
 
             // Tạo message mới trong database
-            Message message = dataApi.createMessage(fromUserId, toUserId, content);
+            Message message = Message.builder()
+                    .fromUserId(fromUserId)
+                    .toUserId(toUserId)
+                    .targetId(toUserId) // Fix: Set targetId for PERSONAL messages
+                    .content(content)
+                    .type(Message.MessageType.PERSONAL)
+                    .build();
+            message = messageRepository.save(message);
 
             // Convert to MessageResponse
             MessageResponse response = MessageResponse.builder()
                     .id(message.getId())
-                    .from(message.getFromUserId())
-                    .to(message.getToUserId())
+                    .fromId(message.getFromUserId())
+                    .toId(message.getToUserId())
                     .content(message.getContent())
                     .createdAt(message.getCreatedAt())
                     .isRead(message.getIsRead())
@@ -77,9 +84,9 @@ public class MessageService {
      * Thông báo cho user có tin nhắn mới
      * (Đây là nơi bạn có thể integrate WebSocket để push real-time)
      */
-    private void notifyUserNewMessage(String userId, MessageResponse message) {
+    private void notifyUserNewMessage(Long userId, MessageResponse message) {
         log.info("🔔 NOTIFICATION: User {} has new message from {} - '{}'",
-                userId, message.getFrom(), message.getContent());
+                userId, message.getFromId(), message.getContent());
 
         // TODO: Implement WebSocket notification here
         // example: webSocketService.sendToUser(userId, message);
@@ -88,31 +95,35 @@ public class MessageService {
     /**
      * Lấy inbox của user
      */
-    public List<MessageResponse> getUserInbox(String userId) {
-        List<Message> messages = dataApi.getMessagesByToUserId(userId);
+    public List<MessageResponse> getUserInbox(Long userId) {
+        List<Message> messages = messageRepository.findByToUserId(userId);
         return convertToResponseList(messages);
     }
 
     /**
      * Lấy các tin nhắn giữa 2 user (conversation)
      */
-    public List<MessageResponse> getConversation(String userId1, String userId2) {
-        List<Message> messages = dataApi.getConversationBetweenUsers(userId1, userId2);
+    public List<MessageResponse> getConversation(Long userId1, Long userId2) {
+        List<Message> messages = messageRepository.findByFromUserIdAndToUserIdOrToUserIdAndFromUserId(userId1, userId2,
+                userId1, userId2);
         return convertToResponseList(messages);
     }
 
     /**
      * Đánh dấu message là đã đọc
      */
-    public void markAsRead(String userId, String messageId) {
-        dataApi.markMessageAsRead(messageId);
+    public void markAsRead(Long userId, Long messageId) {
+        messageRepository.findById(messageId).ifPresent(m -> {
+            m.setIsRead(true);
+            messageRepository.save(m);
+        });
     }
 
     /**
      * Xóa message
      */
-    public void deleteMessage(String userId, String messageId) {
-        dataApi.deleteMessage(messageId);
+    public void deleteMessage(Long userId, Long messageId) {
+        messageRepository.deleteById(messageId);
     }
 
     /**
@@ -127,7 +138,7 @@ public class MessageService {
                 .map(m -> {
                     MessageResponse.MessageResponseBuilder builder = MessageResponse.builder()
                             .id(m.getId())
-                            .from(m.getFromUserId())
+                            .fromId(m.getFromUserId())
                             .content(m.getContent())
                             .createdAt(m.getCreatedAt())
                             .isRead(m.getIsRead());
@@ -140,10 +151,10 @@ public class MessageService {
 
                     // For backward compatibility
                     if (m.getToUserId() != null) {
-                        builder.to(m.getToUserId());
+                        builder.toId(m.getToUserId());
                     } else if (m.getTargetId() != null &&
                             m.getType() == Message.MessageType.PERSONAL) {
-                        builder.to(m.getTargetId());
+                        builder.toId(m.getTargetId());
                     }
 
                     return builder.build();
@@ -159,26 +170,32 @@ public class MessageService {
      * @param content    Nội dung tin nhắn
      * @return MessageResponse - Tin nhắn vừa được gửi
      */
-    public MessageResponse pushToGroup(String fromUserId, String groupId, String content) {
+    public MessageResponse pushToGroup(Long fromUserId, Long groupId, String content) {
         try {
             // Validate
-            if (fromUserId == null || fromUserId.isEmpty()) {
-                throw new IllegalArgumentException("fromUserId cannot be empty");
+            if (fromUserId == null) {
+                throw new IllegalArgumentException("fromUserId cannot be null");
             }
-            if (groupId == null || groupId.isEmpty()) {
-                throw new IllegalArgumentException("groupId cannot be empty");
+            if (groupId == null) {
+                throw new IllegalArgumentException("groupId cannot be null");
             }
             if (content == null || content.isEmpty()) {
                 throw new IllegalArgumentException("content cannot be empty");
             }
 
             // Tạo group message trong database
-            Message message = dataApi.createGroupMessage(fromUserId, groupId, content);
+            Message message = Message.builder()
+                    .fromUserId(fromUserId)
+                    .targetId(groupId)
+                    .content(content)
+                    .type(Message.MessageType.GROUP)
+                    .build();
+            message = messageRepository.save(message);
 
             // Convert to MessageResponse
             MessageResponse response = MessageResponse.builder()
                     .id(message.getId())
-                    .from(message.getFromUserId())
+                    .fromId(message.getFromUserId())
                     .targetId(message.getTargetId())
                     .type(message.getType().toString())
                     .content(message.getContent())
@@ -205,13 +222,13 @@ public class MessageService {
      * @param groupId ID của nhóm
      * @return List<MessageResponse> - Danh sách tin nhắn trong nhóm
      */
-    public List<MessageResponse> getGroupHistory(String groupId) {
+    public List<MessageResponse> getGroupHistory(Long groupId) {
         try {
-            if (groupId == null || groupId.isEmpty()) {
-                throw new IllegalArgumentException("groupId cannot be empty");
+            if (groupId == null) {
+                throw new IllegalArgumentException("groupId cannot be null");
             }
 
-            List<Message> messages = dataApi.getGroupHistory(groupId);
+            List<Message> messages = messageRepository.findByTargetIdAndType(groupId, Message.MessageType.GROUP);
             log.info("Retrieved {} messages from group {}", messages.size(), groupId);
 
             return convertToResponseList(messages);
@@ -226,9 +243,9 @@ public class MessageService {
      * Thông báo cho tất cả members trong group có tin nhắn mới
      * (Đây là nơi bạn có thể integrate WebSocket để push real-time)
      */
-    private void notifyGroupNewMessage(String groupId, MessageResponse message) {
+    private void notifyGroupNewMessage(Long groupId, MessageResponse message) {
         log.info("🔔 GROUP NOTIFICATION: Group {} has new message from {} - '{}'",
-                groupId, message.getFrom(), message.getContent());
+                groupId, message.getFromId(), message.getContent());
 
         // TODO: Implement WebSocket notification for group here
         // example: webSocketService.sendToGroup(groupId, message);
@@ -242,79 +259,51 @@ public class MessageService {
      * @param content    Message content
      * @return Created message entity
      */
-    public Message createMessage(String fromUserId, String toUserId, String content) {
-        return dataApi.createMessage(fromUserId, toUserId, content);
+    public Message createMessage(Long fromUserId, Long toUserId, String content) {
+        Message message = Message.builder()
+                .fromUserId(fromUserId)
+                .toUserId(toUserId)
+                .targetId(toUserId) // Fix: Set targetId for PERSONAL messages
+                .content(content)
+                .type(Message.MessageType.PERSONAL)
+                .build();
+        return messageRepository.save(message);
     }
 
-    /**
-     * Get messages by recipient user ID (from JpaDataApiImpl)
-     * 
-     * @param toUserId Recipient user ID
-     * @return List of messages
-     */
-    public List<Message> getMessagesByToUserId(String toUserId) {
-        return dataApi.getMessagesByToUserId(toUserId);
+    public List<Message> getMessagesByToUserId(Long toUserId) {
+        return messageRepository.findByToUserId(toUserId);
     }
 
-    /**
-     * Get conversation between two users (from JpaDataApiImpl)
-     * 
-     * @param userId1 First user ID
-     * @param userId2 Second user ID
-     * @return List of messages in conversation
-     */
-    public List<Message> getConversationBetweenUsers(String userId1, String userId2) {
-        return dataApi.getConversationBetweenUsers(userId1, userId2);
+    public List<Message> getConversationBetweenUsers(Long userId1, Long userId2) {
+        return messageRepository.findByFromUserIdAndToUserIdOrToUserIdAndFromUserId(userId1, userId2, userId1, userId2);
     }
 
-    /**
-     * Mark message as read (from JpaDataApiImpl)
-     * 
-     * @param messageId Message ID
-     */
-    public void markMessageAsRead(String messageId) {
-        dataApi.markMessageAsRead(messageId);
+    public void markMessageAsRead(Long messageId) {
+        messageRepository.findById(messageId).ifPresent(m -> {
+            m.setIsRead(true);
+            messageRepository.save(m);
+        });
     }
 
-    /**
-     * Delete message by ID (from JpaDataApiImpl)
-     * 
-     * @param messageId Message ID
-     */
-    public void deleteMessageById(String messageId) {
-        dataApi.deleteMessage(messageId);
+    public void deleteMessageById(Long messageId) {
+        messageRepository.deleteById(messageId);
     }
 
-    /**
-     * Create a group message (from JpaDataApiImpl)
-     * 
-     * @param fromUserId Sender user ID
-     * @param groupId    Group ID
-     * @param content    Message content
-     * @return Created message entity
-     */
-    public Message createGroupMessage(String fromUserId, String groupId, String content) {
-        return dataApi.createGroupMessage(fromUserId, groupId, content);
+    public Message createGroupMessage(Long fromUserId, Long groupId, String content) {
+        Message message = Message.builder()
+                .fromUserId(fromUserId)
+                .targetId(groupId)
+                .content(content)
+                .type(Message.MessageType.GROUP)
+                .build();
+        return messageRepository.save(message);
     }
 
-    /**
-     * Get group message history (from JpaDataApiImpl)
-     * 
-     * @param groupId Group ID
-     * @return List of messages in group
-     */
-    public List<Message> getGroupMessageHistory(String groupId) {
-        return dataApi.getGroupHistory(groupId);
+    public List<Message> getGroupMessageHistory(Long groupId) {
+        return messageRepository.findByTargetIdAndType(groupId, Message.MessageType.GROUP);
     }
 
-    /**
-     * Get messages by target ID and type (from JpaDataApiImpl)
-     * 
-     * @param targetId Target ID (user or group)
-     * @param type     Message type (PERSONAL or GROUP)
-     * @return List of messages
-     */
-    public List<Message> getMessagesByTargetIdAndType(String targetId, String type) {
-        return dataApi.getMessagesByTargetIdAndType(targetId, type);
+    public List<Message> getMessagesByTargetIdAndType(Long targetId, Message.MessageType type) {
+        return messageRepository.findByTargetIdAndType(targetId, type);
     }
 }

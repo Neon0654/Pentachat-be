@@ -11,16 +11,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class MessageResponse {
-    private String id;
-    private String from;
-    
+    private Long id;
+    private Long fromId;
+
     // For backward compatibility
-    private String to;
-    
+    private Long toId;
+
     // For group messages
-    private String targetId;  // userId for PERSONAL, groupId for GROUP
-    private String type;       // PERSONAL or GROUP
-    
+    private Long targetId; // userId for PERSONAL, groupId for GROUP
+    private String type; // PERSONAL or GROUP
+
     private String content;
     private LocalDateTime createdAt;
     private Boolean isRead;

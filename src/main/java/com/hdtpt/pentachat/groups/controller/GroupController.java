@@ -17,13 +17,16 @@ import java.util.List;
 @RequestMapping("/api/groups")
 public class GroupController {
     private final GroupService groupService;
-    public GroupController(GroupService groupService) { this.groupService = groupService; }
+
+    public GroupController(GroupService groupService) {
+        this.groupService = groupService;
+    }
 
     @GetMapping("/my") // PHẢI CÓ DÒNG NÀY
     public ResponseEntity<ApiResponse> getMyGroups(
-            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-User-Id") Long userId,
             @RequestHeader("X-Session-Id") String sessionId) {
-        
+
         // Xác thực session
         SessionManager.SessionInfo sessionInfo = SessionManager.getUserSession(userId);
         if (sessionInfo == null || !sessionInfo.sessionId.equals(sessionId)) {
@@ -36,13 +39,26 @@ public class GroupController {
 
     @PostMapping
     public ResponseEntity<ApiResponse> createGroup(
-            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-User-Id") Long userId,
             @RequestHeader("X-Session-Id") String sessionId,
             @RequestBody CreateGroupRequest request) {
+
+        // Xác thực session
+        SessionManager.SessionInfo sessionInfo = SessionManager.getUserSession(userId);
+        if (sessionInfo == null || !sessionInfo.sessionId.equals(sessionId)) {
+            throw new AppException(HttpStatus.UNAUTHORIZED, "Invalid session.");
+        }
+
         Group newGroup = groupService.createGroup(request.getName(), userId, request.getMemberIds());
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.builder().success(true).message("Thành công!").data(newGroup).build());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.builder().success(true).message("Thành công!").data(newGroup).build());
     }
 
-    @Data @AllArgsConstructor @NoArgsConstructor
-    public static class CreateGroupRequest { private String name; private List<String> memberIds; }
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class CreateGroupRequest {
+        private String name;
+        private List<Long> memberIds;
+    }
 }

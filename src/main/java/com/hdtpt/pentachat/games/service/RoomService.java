@@ -3,12 +3,11 @@ package com.hdtpt.pentachat.games.service;
 import com.hdtpt.pentachat.games.model.InviteStatus;
 import com.hdtpt.pentachat.games.model.RoomInvite;
 import com.hdtpt.pentachat.games.repository.RoomInviteRepository;
-import com.hdtpt.pentachat.util.IdGenerator;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,20 +19,18 @@ public class RoomService {
 
     private final RoomInviteRepository inviteRepository;
     private final SimpMessagingTemplate messagingTemplate;
-    private final com.hdtpt.pentachat.users.repository.UserRepository userRepository;
+    private final com.hdtpt.pentachat.identity.repository.UserRepository userRepository;
 
     /**
      * Hàm mời người chơi vào phòng
      */
-    public RoomInvite inviteUser(String roomId, String inviterId, String inviteeId) {
+    public RoomInvite inviteUser(Long roomId, Long inviterId, Long inviteeId) {
         // 1. Tạo đối tượng RoomInvite
         RoomInvite invite = RoomInvite.builder()
-                .id(IdGenerator.generateId())
                 .roomId(roomId)
                 .inviterId(inviterId)
                 .inviteeId(inviteeId)
                 .status(InviteStatus.PENDING)
-                .createdAt(LocalDateTime.now())
                 .build();
 
         // 2. Lưu vào SQL Server qua Repository
@@ -48,7 +45,7 @@ public class RoomService {
         return savedInvite;
     }
 
-    public Map<String, Object> getRoomMembers(String roomId) {
+    public Map<String, Object> getRoomMembers(Long roomId) {
         List<RoomInvite> invites = inviteRepository.findByRoomId(roomId);
         Map<String, Object> response = new java.util.HashMap<>();
 
@@ -56,11 +53,11 @@ public class RoomService {
             return response;
 
         // 1. Chủ phòng là người tạo lời mời đầu tiên
-        String ownerId = invites.get(0).getInviterId();
+        Long ownerId = invites.get(0).getInviterId();
         String ownerName = userRepository.findById(ownerId).map(u -> u.getUsername()).orElse("Unknown");
 
         // 2. Danh sách những người đã vào (gồm cả chủ phòng)
-        java.util.Set<String> userIds = new java.util.HashSet<>();
+        java.util.Set<Long> userIds = new java.util.HashSet<>();
         userIds.add(ownerId);
         invites.stream()
                 .filter(inv -> inv.getStatus() == InviteStatus.ACCEPTED)
@@ -75,7 +72,7 @@ public class RoomService {
         return response;
     }
 
-    public void acceptInvite(String inviteId) {
+    public void acceptInvite(Long inviteId) {
         // 1. Tìm lời mời trong DB theo ID
         RoomInvite invite = inviteRepository.findById(inviteId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy lời mời với ID: " + inviteId));
@@ -90,7 +87,7 @@ public class RoomService {
                 inviteId, invite.getInviteeId(), invite.getRoomId());
     }
 
-    public void leaveRoom(String roomId, String userId) {
+    public void leaveRoom(Long roomId, Long userId) {
         // Tìm lời mời của người này trong phòng và xóa đi
         List<RoomInvite> invites = inviteRepository.findByRoomId(roomId);
         invites.stream()

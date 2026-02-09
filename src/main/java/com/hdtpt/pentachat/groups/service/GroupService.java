@@ -1,12 +1,11 @@
 package com.hdtpt.pentachat.groups.service;
 
-import com.hdtpt.pentachat.dataaccess.DataApi;
+import com.hdtpt.pentachat.groups.repository.GroupRepository;
 import com.hdtpt.pentachat.groups.model.Group;
-import com.hdtpt.pentachat.util.IdGenerator;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,51 +13,48 @@ import java.util.List;
 @Slf4j
 public class GroupService {
 
-    private final DataApi dataApi;
+    private final GroupRepository groupRepository;
 
-    public GroupService(DataApi dataApi) {
-        this.dataApi = dataApi;
+    public GroupService(GroupRepository groupRepository) {
+        this.groupRepository = groupRepository;
     }
 
     /**
      * Tạo một nhóm chat mới
      */
-    public Group createGroup(String name, String creatorId, List<String> memberIds) {
+    public Group createGroup(String name, Long creatorId, List<Long> memberIds) {
         // 1. Validate dữ liệu đầu vào
         if (name == null || name.trim().isEmpty()) {
             throw new RuntimeException("Tên nhóm không được để trống");
         }
 
         // 2. Đảm bảo người tạo luôn có tên trong danh sách thành viên
-        List<String> finalMembers = new ArrayList<>(memberIds != null ? memberIds : new ArrayList<>());
+        List<Long> finalMembers = new ArrayList<>(memberIds != null ? memberIds : new ArrayList<>());
         if (!finalMembers.contains(creatorId)) {
             finalMembers.add(creatorId);
         }
 
         // 3. Khởi tạo đối tượng Group
-        LocalDateTime now = LocalDateTime.now();
         Group newGroup = Group.builder()
-                .id(IdGenerator.generateId())
                 .name(name)
                 .creatorId(creatorId)
                 .memberIds(finalMembers)
-                .createdAt(now)
                 .build();
 
         log.info("Đang tạo nhóm mới: {} bởi user {}", name, creatorId);
 
-        // 4. LƯU VÀO DATABASE (Đã bỏ comment)
-        return dataApi.saveGroup(newGroup);
+        // 4. LƯU VÀO DATABASE
+        return groupRepository.save(newGroup);
     }
 
     /**
      * Lấy danh sách các nhóm mà user tham gia
      */
-    public List<Group> getUserGroups(String userId) {
+    public List<Group> getUserGroups(Long userId) {
         log.info("Đang lấy danh sách nhóm cho user: {}", userId);
 
-        // 5. GỌI DATA API ĐỂ LẤY DỮ LIỆU THẬT (Đã bỏ comment)
-        return dataApi.findGroupsByUserId(userId);
+        // 5. Lấy dữ liệu từ Repo
+        return groupRepository.findByMemberId(userId);
     }
 
     /**
@@ -68,26 +64,14 @@ public class GroupService {
      * @return Saved group entity
      */
     public Group saveGroup(Group group) {
-        return dataApi.saveGroup(group);
+        return groupRepository.save(group);
     }
 
-    /**
-     * Find group by ID (from JpaDataApiImpl)
-     * 
-     * @param groupId Group ID to search for
-     * @return Group entity or null if not found
-     */
-    public Group findGroupById(String groupId) {
-        return dataApi.findGroupById(groupId);
+    public Group findGroupById(Long groupId) {
+        return groupRepository.findById(groupId).orElse(null);
     }
 
-    /**
-     * Find all groups that a user is a member of (from JpaDataApiImpl)
-     * 
-     * @param userId User ID to search for
-     * @return List of groups the user belongs to
-     */
-    public List<Group> findGroupsByUserId(String userId) {
-        return dataApi.findGroupsByUserId(userId);
+    public List<Group> findGroupsByUserId(Long userId) {
+        return groupRepository.findByMemberId(userId);
     }
 }

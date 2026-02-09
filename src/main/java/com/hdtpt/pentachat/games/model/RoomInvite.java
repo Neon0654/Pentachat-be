@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
+import com.hdtpt.pentachat.util.BaseEntity;
 
 /**
  * Thực thể lưu trữ lời mời vào phòng chơi game
@@ -16,23 +16,21 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoomInvite {
+public class RoomInvite extends BaseEntity {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
-    private String roomId;
+    private Long roomId;
 
     @Column(nullable = false)
-    private String inviterId; // ID người gửi lời mời
+    private Long inviterId; // ID người gửi lời mời
 
     @Column(nullable = false)
-    private String inviteeId; // ID người nhận lời mời
+    private Long inviteeId; // ID người nhận lời mời
 
     @Enumerated(EnumType.STRING)
     private InviteStatus status; // Trạng thái: PENDING, ACCEPTED, REJECTED
-
-    private LocalDateTime createdAt;
 }
-

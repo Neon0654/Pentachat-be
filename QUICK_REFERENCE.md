@@ -15,7 +15,7 @@ CREATE TABLE messages (
     content NVARCHAR(MAX) NOT NULL,
     createdAt DATETIME2 NOT NULL,
     updatedAt DATETIME2 NOT NULL,
-    isRead BIT NOT NULL,
+    isRead BIT NULL,
     toUserId NVARCHAR(36)  -- Legacy field for backward compatibility
 )
 ```

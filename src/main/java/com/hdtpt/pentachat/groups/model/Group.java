@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.hdtpt.pentachat.util.BaseEntity;
 
 /**
  * Thực thể Nhóm Chat (Group)
@@ -18,16 +19,17 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Group {
+public class Group extends BaseEntity{
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)
-    private String creatorId;
+    private Long creatorId;
 
     /**
      * Danh sách ID của các thành viên trong nhóm
@@ -36,8 +38,5 @@ public class Group {
     @ElementCollection(fetch = FetchType.EAGER) // SỬA Ở ĐÂY
     @CollectionTable(name = "group_members", joinColumns = @JoinColumn(name = "group_id"))
     @Column(name = "user_id")
-    private List<String> memberIds;
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private List<Long> memberIds;
 }

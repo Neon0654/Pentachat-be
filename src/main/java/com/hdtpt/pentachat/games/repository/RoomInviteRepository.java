@@ -7,9 +7,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface RoomInviteRepository extends JpaRepository<RoomInvite, String> {
+public interface RoomInviteRepository extends JpaRepository<RoomInvite, Long> {
     // Tìm danh sách lời mời đang chờ (PENDING) của một người cụ thể
-    List<RoomInvite> findByInviteeIdAndStatus(String inviteeId, String status);
-    List<RoomInvite> findByRoomIdAndStatus(String roomId, InviteStatus status);
-    List<RoomInvite> findByRoomId(String roomId);
+    List<RoomInvite> findByInviteeIdAndStatus(Long inviteeId, String status);
+
+    List<RoomInvite> findByRoomIdAndStatus(Long roomId, InviteStatus status);
+
+    List<RoomInvite> findByRoomId(Long roomId);
 }

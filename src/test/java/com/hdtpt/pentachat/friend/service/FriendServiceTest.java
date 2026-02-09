@@ -2,18 +2,19 @@ package com.hdtpt.pentachat.friend.service;
 
 import com.hdtpt.pentachat.friend.model.FriendRequest;
 import com.hdtpt.pentachat.friend.repository.FriendRequestRepository;
-import com.hdtpt.pentachat.users.model.User;
-import com.hdtpt.pentachat.users.repository.UserRepository;
+import com.hdtpt.pentachat.identity.model.User;
+import com.hdtpt.pentachat.identity.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,6 +36,9 @@ class FriendServiceTest {
     @Autowired
     private FriendService friendService;
 
+    @MockitoBean
+    private JavaMailSender mailSender;
+
     @Autowired
     private FriendRequestRepository friendRequestRepository;
 
@@ -53,32 +57,23 @@ class FriendServiceTest {
 
         // Tạo test users
         user1 = User.builder()
-                .id(UUID.randomUUID().toString())
                 .username("user1_test")
                 .password("password123")
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .build();
 
         user2 = User.builder()
-                .id(UUID.randomUUID().toString())
                 .username("user2_test")
                 .password("password123")
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .build();
 
         user3 = User.builder()
-                .id(UUID.randomUUID().toString())
                 .username("user3_test")
                 .password("password123")
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .build();
 
-        userRepository.save(user1);
-        userRepository.save(user2);
-        userRepository.save(user3);
+        user1 = userRepository.save(user1);
+        user2 = userRepository.save(user2);
+        user3 = userRepository.save(user3);
     }
 
     @Test
@@ -103,8 +98,7 @@ class FriendServiceTest {
         // When & Then
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> friendService.sendFriendRequest(user1.getId(), user1.getId())
-        );
+                () -> friendService.sendFriendRequest(user1.getId(), user1.getId()));
         assertEquals("Cannot send friend request to yourself", exception.getMessage());
     }
 
@@ -114,8 +108,7 @@ class FriendServiceTest {
         // When & Then
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> friendService.sendFriendRequest("non-existent-id", user2.getId())
-        );
+                () -> friendService.sendFriendRequest(999L, user2.getId()));
         assertEquals("From user does not exist", exception.getMessage());
     }
 
@@ -125,8 +118,7 @@ class FriendServiceTest {
         // When & Then
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> friendService.sendFriendRequest(user1.getId(), "non-existent-id")
-        );
+                () -> friendService.sendFriendRequest(user1.getId(), 999L));
         assertEquals("To user does not exist", exception.getMessage());
     }
 
@@ -139,8 +131,7 @@ class FriendServiceTest {
         // When & Then
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> friendService.sendFriendRequest(user1.getId(), user2.getId())
-        );
+                () -> friendService.sendFriendRequest(user1.getId(), user2.getId()));
         assertEquals("Friend request already sent", exception.getMessage());
     }
 
@@ -166,8 +157,7 @@ class FriendServiceTest {
         // When & Then
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> friendService.acceptFriend("non-existent-id")
-        );
+                () -> friendService.acceptFriend(999L));
         assertEquals("Friend request not found", exception.getMessage());
     }
 
@@ -181,8 +171,7 @@ class FriendServiceTest {
         // When & Then
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> friendService.acceptFriend(sentRequest.getId())
-        );
+                () -> friendService.acceptFriend(sentRequest.getId()));
         assertEquals("Friend request is not in PENDING status", exception.getMessage());
     }
 
@@ -206,8 +195,7 @@ class FriendServiceTest {
         // When & Then
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> friendService.rejectFriend("non-existent-id")
-        );
+                () -> friendService.rejectFriend(999L));
         assertEquals("Friend request not found", exception.getMessage());
     }
 

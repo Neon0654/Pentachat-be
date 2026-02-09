@@ -20,7 +20,8 @@ import java.util.stream.Collectors;
  * - POST /api/friends/accept/{requestId} : Chấp nhận yêu cầu kết bạn
  * - POST /api/friends/reject/{requestId} : Từ chối yêu cầu kết bạn
  * - GET /api/friends/pending/{userId} : Lấy danh sách yêu cầu đang chờ
- * - GET /api/friends/check/{userId1}/{userId2} : Kiểm tra xem có phải bạn bè không
+ * - GET /api/friends/check/{userId1}/{userId2} : Kiểm tra xem có phải bạn bè
+ * không
  */
 @RestController
 @RequestMapping("/api/friends")
@@ -43,15 +44,15 @@ public class FriendController {
     public ResponseEntity<ApiResponse> sendFriendRequest(
             @Valid @RequestBody FriendRequestDTO request) {
         try {
-            log.info("Sending friend request from {} to {}", 
+            log.info("Sending friend request from {} to {}",
                     request.getFromUserId(), request.getToUserId());
 
             FriendRequest friendRequest = friendService.sendFriendRequest(
-                    request.getFromUserId(), 
+                    request.getFromUserId(),
                     request.getToUserId());
 
             FriendRequestDTO responseDTO = convertToDTO(friendRequest);
-            
+
             return ResponseEntity.ok(ApiResponse.builder()
                     .success(true)
                     .message("Friend request sent successfully")
@@ -79,7 +80,7 @@ public class FriendController {
      */
     @PostMapping("/accept/{requestId}")
     public ResponseEntity<ApiResponse> acceptFriend(
-            @PathVariable String requestId) {
+            @PathVariable Long requestId) {
         try {
             log.info("Accepting friend request: {}", requestId);
 
@@ -113,7 +114,7 @@ public class FriendController {
      */
     @PostMapping("/reject/{requestId}")
     public ResponseEntity<ApiResponse> rejectFriend(
-            @PathVariable String requestId) {
+            @PathVariable Long requestId) {
         try {
             log.info("Rejecting friend request: {}", requestId);
 
@@ -147,7 +148,7 @@ public class FriendController {
      */
     @GetMapping("/pending/{userId}")
     public ResponseEntity<ApiResponse> getPendingRequests(
-            @PathVariable String userId) {
+            @PathVariable Long userId) {
         try {
             log.info("Getting pending requests for user: {}", userId);
 
@@ -183,8 +184,8 @@ public class FriendController {
      */
     @GetMapping("/check/{userId1}/{userId2}")
     public ResponseEntity<ApiResponse> checkFriendship(
-            @PathVariable String userId1,
-            @PathVariable String userId2) {
+            @PathVariable Long userId1,
+            @PathVariable Long userId2) {
         try {
             log.info("Checking friendship between {} and {}", userId1, userId2);
 

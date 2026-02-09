@@ -2,14 +2,13 @@ package com.hdtpt.pentachat.friend.service;
 
 import com.hdtpt.pentachat.friend.model.FriendRequest;
 import com.hdtpt.pentachat.friend.repository.FriendRequestRepository;
-import com.hdtpt.pentachat.users.model.User;
-import com.hdtpt.pentachat.users.repository.UserRepository;
+import com.hdtpt.pentachat.identity.model.User;
+import com.hdtpt.pentachat.identity.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Friend Service - Xử lý logic quản lý quan hệ bạn bè
@@ -28,8 +27,8 @@ public class FriendService {
     private final FriendRequestRepository friendRequestRepository;
     private final UserRepository userRepository;
 
-    public FriendService(FriendRequestRepository friendRequestRepository, 
-                        UserRepository userRepository) {
+    public FriendService(FriendRequestRepository friendRequestRepository,
+            UserRepository userRepository) {
         this.friendRequestRepository = friendRequestRepository;
         this.userRepository = userRepository;
     }
@@ -41,14 +40,14 @@ public class FriendService {
      * @param toId   User ID của người nhận
      * @return FriendRequest - Yêu cầu kết bạn vừa được tạo
      */
-    public FriendRequest sendFriendRequest(String fromId, String toId) {
+    public FriendRequest sendFriendRequest(Long fromId, Long toId) {
         try {
             // Validate input
-            if (fromId == null || fromId.isEmpty()) {
-                throw new IllegalArgumentException("fromId cannot be empty");
+            if (fromId == null) {
+                throw new IllegalArgumentException("fromId cannot be null");
             }
-            if (toId == null || toId.isEmpty()) {
-                throw new IllegalArgumentException("toId cannot be empty");
+            if (toId == null) {
+                throw new IllegalArgumentException("toId cannot be null");
             }
             if (fromId.equals(toId)) {
                 throw new IllegalArgumentException("Cannot send friend request to yourself");
@@ -57,7 +56,7 @@ public class FriendService {
             // Kiểm tra xem cả hai user có tồn tại không
             Optional<User> fromUser = userRepository.findById(fromId);
             Optional<User> toUser = userRepository.findById(toId);
-            
+
             if (fromUser.isEmpty()) {
                 throw new IllegalArgumentException("From user does not exist");
             }
@@ -71,9 +70,8 @@ public class FriendService {
             }
 
             // Kiểm tra xem yêu cầu đã tồn tại chưa
-            Optional<FriendRequest> existingRequest = 
-                friendRequestRepository.findByFromUserIdAndToUserId(fromId, toId);
-            
+            Optional<FriendRequest> existingRequest = friendRequestRepository.findByFromUserIdAndToUserId(fromId, toId);
+
             if (existingRequest.isPresent()) {
                 FriendRequest req = existingRequest.get();
                 if (req.getStatus().equals("PENDING")) {
@@ -85,12 +83,9 @@ public class FriendService {
 
             // Tạo yêu cầu kết bạn mới
             FriendRequest friendRequest = FriendRequest.builder()
-                    .id(UUID.randomUUID().toString())
                     .fromUserId(fromId)
                     .toUserId(toId)
                     .status("PENDING")
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
                     .build();
 
             FriendRequest saved = friendRequestRepository.save(friendRequest);
@@ -109,11 +104,11 @@ public class FriendService {
      * @param requestId ID của yêu cầu kết bạn
      * @return FriendRequest - Yêu cầu kết bạn vừa được chấp nhận
      */
-    public FriendRequest acceptFriend(String requestId) {
+    public FriendRequest acceptFriend(Long requestId) {
         try {
             // Validate input
-            if (requestId == null || requestId.isEmpty()) {
-                throw new IllegalArgumentException("requestId cannot be empty");
+            if (requestId == null) {
+                throw new IllegalArgumentException("requestId cannot be null");
             }
 
             // Tìm yêu cầu kết bạn
@@ -131,7 +126,6 @@ public class FriendService {
 
             // Cập nhật trạng thái thành ACCEPTED
             friendRequest.setStatus("ACCEPTED");
-            friendRequest.setUpdatedAt(LocalDateTime.now());
 
             FriendRequest saved = friendRequestRepository.save(friendRequest);
             log.info("Friend request {} accepted", requestId);
@@ -149,11 +143,11 @@ public class FriendService {
      * @param requestId ID của yêu cầu kết bạn
      * @return FriendRequest - Yêu cầu kết bạn vừa được từ chối
      */
-    public FriendRequest rejectFriend(String requestId) {
+    public FriendRequest rejectFriend(Long requestId) {
         try {
             // Validate input
-            if (requestId == null || requestId.isEmpty()) {
-                throw new IllegalArgumentException("requestId cannot be empty");
+            if (requestId == null) {
+                throw new IllegalArgumentException("requestId cannot be null");
             }
 
             // Tìm yêu cầu kết bạn
@@ -171,7 +165,6 @@ public class FriendService {
 
             // Cập nhật trạng thái thành REJECTED
             friendRequest.setStatus("REJECTED");
-            friendRequest.setUpdatedAt(LocalDateTime.now());
 
             FriendRequest saved = friendRequestRepository.save(friendRequest);
             log.info("Friend request {} rejected", requestId);
@@ -189,14 +182,13 @@ public class FriendService {
      * @param userId User ID
      * @return List<FriendRequest> - Danh sách yêu cầu đang chờ
      */
-    public List<FriendRequest> getPendingRequests(String userId) {
+    public List<FriendRequest> getPendingRequests(Long userId) {
         try {
-            if (userId == null || userId.isEmpty()) {
-                throw new IllegalArgumentException("userId cannot be empty");
+            if (userId == null) {
+                throw new IllegalArgumentException("userId cannot be null");
             }
 
-            List<FriendRequest> requests = 
-                friendRequestRepository.findByToUserIdAndStatus(userId, "PENDING");
+            List<FriendRequest> requests = friendRequestRepository.findByToUserIdAndStatus(userId, "PENDING");
             log.info("Retrieved {} pending requests for user {}", requests.size(), userId);
             return requests;
 
@@ -213,13 +205,13 @@ public class FriendService {
      * @param userId2 User ID 2
      * @return boolean - true nếu là bạn bè, false nếu không
      */
-    public boolean areFriends(String userId1, String userId2) {
+    public boolean areFriends(Long userId1, Long userId2) {
         try {
-            if (userId1 == null || userId1.isEmpty()) {
-                throw new IllegalArgumentException("userId1 cannot be empty");
+            if (userId1 == null) {
+                throw new IllegalArgumentException("userId1 cannot be null");
             }
-            if (userId2 == null || userId2.isEmpty()) {
-                throw new IllegalArgumentException("userId2 cannot be empty");
+            if (userId2 == null) {
+                throw new IllegalArgumentException("userId2 cannot be null");
             }
 
             return friendRequestRepository.areFriends(userId1, userId2);

@@ -12,20 +12,21 @@ import jakarta.validation.constraints.NotNull;
 @NoArgsConstructor
 @Builder
 public class MessageRequest {
-    
+
     @NotNull(message = "from cannot be null")
-    private String from;
+    private Long from;
 
     // For backward compatibility with personal messages
-    private String to;
+    private Long to;
 
     // For group messages
-    private String groupId;
+    private Long groupId;
 
     @NotBlank(message = "content cannot be blank")
     private String content;
 
-    // Message type: PERSONAL or GROUP (default: PERSONAL for backward compatibility)
+    // Message type: PERSONAL or GROUP (default: PERSONAL for backward
+    // compatibility)
     @Builder.Default
     private String type = "PERSONAL";
 }
