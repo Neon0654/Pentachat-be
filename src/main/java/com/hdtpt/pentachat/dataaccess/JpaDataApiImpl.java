@@ -6,7 +6,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hdtpt.pentachat.groups.model.Group;
-import com.hdtpt.pentachat.groups.repository.GroupRepository;import com.hdtpt.pentachat.message.model.Message;
+import com.hdtpt.pentachat.groups.repository.GroupRepository;
+import com.hdtpt.pentachat.message.model.Message;
 import com.hdtpt.pentachat.message.repository.MessageRepository;
 import com.hdtpt.pentachat.transaction.model.Transaction;
 import com.hdtpt.pentachat.transaction.repository.TransactionRepository;
@@ -23,9 +24,28 @@ import java.util.Objects;
 /**
  * JPA implementation of DataApi
  * Uses Spring Data JPA repositories for database operations
+ * 
+ * @deprecated This class is being phased out in favor of domain-specific
+ *             services.
+ *             New code should use the following services instead:
+ *             - {@link com.hdtpt.pentachat.users.service.UserService} for user
+ *             operations
+ *             - {@link com.hdtpt.pentachat.groups.service.GroupService} for
+ *             group operations
+ *             - {@link com.hdtpt.pentachat.wallet.service.WalletService} for
+ *             wallet operations
+ *             -
+ *             {@link com.hdtpt.pentachat.transaction.service.TransactionService}
+ *             for transaction operations
+ *             - {@link com.hdtpt.pentachat.message.service.MessageService} for
+ *             message operations
+ * 
+ *             This class is maintained for backward compatibility with existing
+ *             code.
  */
 @Repository
 @Primary // Spring sẽ ưu tiên dùng DB này thay vì Mock khi chạy ứng dụng
+@Deprecated
 public class JpaDataApiImpl implements DataApi {
 
     private final UserRepository userRepo;
@@ -209,7 +229,6 @@ public class JpaDataApiImpl implements DataApi {
     public void deleteMessage(String messageId) {
         messageRepo.deleteById(messageId);
     }
-<<<<<<< HEAD
 
     // ================= GROUP MESSAGE =================
 
@@ -245,12 +264,4 @@ public class JpaDataApiImpl implements DataApi {
             throw new RuntimeException("Invalid message type: " + type);
         }
     }
-
-    @Override
-    public List<User> searchUsers(String query) {
-        return userRepo.findByUsernameContainingIgnoreCase(query);
-    }
 }
-=======
-}
->>>>>>> origin/create_group

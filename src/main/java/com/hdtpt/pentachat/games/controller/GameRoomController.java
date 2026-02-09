@@ -1,18 +1,18 @@
-package com.hdtpt.pentachat.controller;
+package com.hdtpt.pentachat.games.controller;
 
 import com.hdtpt.pentachat.model.Room;
-import com.hdtpt.pentachat.service.RoomService;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/game")
-public class GameController {
+public class GameRoomController {
 
-    private final RoomService roomService;
+    private final GameRoomService roomService;
 
-    public GameController(RoomService roomService) {
+    public GameRoomController(GameRoomService roomService) {
         this.roomService = roomService;
     }
 

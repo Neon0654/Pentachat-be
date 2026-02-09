@@ -30,6 +30,7 @@ public class WalletService {
 
     /**
      * Get wallet balance for a user
+     * 
      * @param userId user's ID
      * @return wallet with balance
      * @throws AppException if user or wallet not found
@@ -37,7 +38,7 @@ public class WalletService {
     public Wallet getBalance(String userId) {
         // User user = dataApi.findUserById(userId);
         // if (user == null) {
-        //     throw new AppException("User not found");
+        // throw new AppException("User not found");
         // }
 
         Wallet wallet = dataApi.getWalletByUserId(userId);
@@ -50,6 +51,7 @@ public class WalletService {
 
     /**
      * Deposit money into user's wallet
+     * 
      * @param userId user's ID
      * @param amount amount to deposit
      * @return updated wallet
@@ -73,8 +75,7 @@ public class WalletService {
                 Transaction.TransactionType.DEPOSIT,
                 userId,
                 null,
-                amount
-        );
+                amount);
 
         // Return updated wallet
         return dataApi.getWalletByUserId(userId);
@@ -82,10 +83,12 @@ public class WalletService {
 
     /**
      * Withdraw money from user's wallet
+     * 
      * @param userId user's ID
      * @param amount amount to withdraw
      * @return updated wallet
-     * @throws AppException if user/wallet not found, amount invalid, or insufficient balance
+     * @throws AppException if user/wallet not found, amount invalid, or
+     *                      insufficient balance
      */
     public Wallet withdraw(String userId, Double amount) {
         // Validate input
@@ -110,8 +113,7 @@ public class WalletService {
                 Transaction.TransactionType.WITHDRAW,
                 userId,
                 null,
-                amount
-        );
+                amount);
 
         // Return updated wallet
         return dataApi.getWalletByUserId(userId);
@@ -119,11 +121,13 @@ public class WalletService {
 
     /**
      * Transfer money from one user to another
+     * 
      * @param fromUserId sender's ID
      * @param toUsername recipient's username
-     * @param amount amount to transfer
+     * @param amount     amount to transfer
      * @return updated wallet of sender
-     * @throws AppException if users not found, amount invalid, or insufficient balance
+     * @throws AppException if users not found, amount invalid, or insufficient
+     *                      balance
      */
 
     @Transactional
@@ -142,7 +146,7 @@ public class WalletService {
         // Get recipient
         User toUser = dataApi.findUserByUsername(toUsername);
         // if (toUser == null) {
-        //     throw new AppException("Recipient not found");
+        // throw new AppException("Recipient not found");
         // }
 
         // Check recipient is not the same as sender
@@ -167,8 +171,7 @@ public class WalletService {
                 Transaction.TransactionType.TRANSFER,
                 fromUserId,
                 toUser.getId(),
-                amount
-        );
+                amount);
 
         // Return updated sender's wallet
         return dataApi.getWalletByUserId(fromUserId);
@@ -176,6 +179,7 @@ public class WalletService {
 
     /**
      * Get transaction history for a user
+     * 
      * @param userId user's ID
      * @return list of transactions
      * @throws AppException if user not found
@@ -183,9 +187,39 @@ public class WalletService {
     public List<Transaction> getTransactionHistory(String userId) {
         // User user = dataApi.findUserById(userId);
         // if (user == null) {
-        //     throw new AppException("User not found");
+        // throw new AppException("User not found");
         // }
 
         return dataApi.getTransactionsByUserId(userId);
+    }
+
+    /**
+     * Get wallet by user ID (from JpaDataApiImpl)
+     * 
+     * @param userId User ID
+     * @return Wallet entity
+     */
+    public Wallet getWalletByUserId(String userId) {
+        return dataApi.getWalletByUserId(userId);
+    }
+
+    /**
+     * Update wallet balance (from JpaDataApiImpl)
+     * 
+     * @param userId     User ID
+     * @param newBalance New balance amount
+     */
+    public void updateWalletBalance(String userId, Double newBalance) {
+        dataApi.updateWalletBalance(userId, newBalance);
+    }
+
+    /**
+     * Create wallet for user (from JpaDataApiImpl)
+     * 
+     * @param userId         User ID
+     * @param initialBalance Initial balance amount
+     */
+    public void createWallet(String userId, Double initialBalance) {
+        dataApi.createWallet(userId, initialBalance);
     }
 }

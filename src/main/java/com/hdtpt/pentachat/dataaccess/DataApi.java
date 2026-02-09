@@ -17,14 +17,20 @@ public interface DataApi {
 
     // ============ USER OPERATIONS ============
     User createUser(String username, String password);
+
     User findUserByUsername(String username);
+
     User findUserById(String userId);
+
     boolean userExists(String username);
+
     List<User> searchUsers(String query); // Hàm tìm kiếm đã thêm trước đó
 
     // ============ WALLET OPERATIONS ============
     Wallet getWalletByUserId(String userId);
+
     void updateWalletBalance(String userId, Double newBalance);
+
     void createWallet(String userId, Double initialBalance);
 
     // ============ TRANSACTION OPERATIONS ============
@@ -33,13 +39,18 @@ public interface DataApi {
             String fromUserId,
             String toUserId,
             Double amount);
+
     List<Transaction> getTransactionsByUserId(String userId);
 
     // ============ MESSAGE OPERATIONS ============
     Message createMessage(String fromUserId, String toUserId, String content);
+
     List<Message> getMessagesByToUserId(String toUserId);
+
     List<Message> getConversationBetweenUsers(String userId1, String userId2);
+
     void markMessageAsRead(String messageId);
+
     void deleteMessage(String messageId);
 
     // ============ GROUP OPERATIONS (PHẦN MỚI THÊM) ============
@@ -47,8 +58,17 @@ public interface DataApi {
     /**
      * Lưu thông tin nhóm mới hoặc cập nhật nhóm cũ
      */
-<<<<<<< HEAD
-    void deleteMessage(String messageId);
+    Group saveGroup(Group group);
+
+    /**
+     * Tìm nhóm theo ID
+     */
+    Group findGroupById(String groupId);
+
+    /**
+     * Tìm tất cả các nhóm mà một User tham gia (dựa trên memberIds)
+     */
+    List<Group> findGroupsByUserId(String userId);
 
     /**
      * Create and save a group message
@@ -64,20 +84,4 @@ public interface DataApi {
      * Get messages by target ID and type
      */
     List<Message> getMessagesByTargetIdAndType(String targetId, String type);
-
-    List<User> searchUsers(String query);
 }
-=======
-    Group saveGroup(Group group);
-
-    /**
-     * Tìm nhóm theo ID
-     */
-    Group findGroupById(String groupId);
-
-    /**
-     * Tìm tất cả các nhóm mà một User tham gia (dựa trên memberIds)
-     */
-    List<Group> findGroupsByUserId(String userId);
-}
->>>>>>> origin/create_group

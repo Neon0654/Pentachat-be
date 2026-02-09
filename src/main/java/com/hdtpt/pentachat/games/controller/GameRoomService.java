@@ -1,4 +1,4 @@
-package com.hdtpt.pentachat.service;
+package com.hdtpt.pentachat.games.controller;
 
 import com.hdtpt.pentachat.model.Room;
 import org.springframework.stereotype.Service;
@@ -7,12 +7,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class RoomService {
+public class GameRoomService {
 
     // Giả lập bảng rooms (sau này thay bằng DB)
     private final Map<Long, Room> rooms = new HashMap<>();
 
-    public RoomService() {
+    public GameRoomService() {
         rooms.put(1L, new Room(1L, "WAITING"));
         rooms.put(2L, new Room(2L, "WAITING"));
     }

@@ -48,7 +48,7 @@ public class GroupService {
         log.info("Đang tạo nhóm mới: {} bởi user {}", name, creatorId);
 
         // 4. LƯU VÀO DATABASE (Đã bỏ comment)
-        return dataApi.saveGroup(newGroup); 
+        return dataApi.saveGroup(newGroup);
     }
 
     /**
@@ -56,8 +56,38 @@ public class GroupService {
      */
     public List<Group> getUserGroups(String userId) {
         log.info("Đang lấy danh sách nhóm cho user: {}", userId);
-        
+
         // 5. GỌI DATA API ĐỂ LẤY DỮ LIỆU THẬT (Đã bỏ comment)
+        return dataApi.findGroupsByUserId(userId);
+    }
+
+    /**
+     * Save or update a group (from JpaDataApiImpl)
+     * 
+     * @param group Group entity to save
+     * @return Saved group entity
+     */
+    public Group saveGroup(Group group) {
+        return dataApi.saveGroup(group);
+    }
+
+    /**
+     * Find group by ID (from JpaDataApiImpl)
+     * 
+     * @param groupId Group ID to search for
+     * @return Group entity or null if not found
+     */
+    public Group findGroupById(String groupId) {
+        return dataApi.findGroupById(groupId);
+    }
+
+    /**
+     * Find all groups that a user is a member of (from JpaDataApiImpl)
+     * 
+     * @param userId User ID to search for
+     * @return List of groups the user belongs to
+     */
+    public List<Group> findGroupsByUserId(String userId) {
         return dataApi.findGroupsByUserId(userId);
     }
 }

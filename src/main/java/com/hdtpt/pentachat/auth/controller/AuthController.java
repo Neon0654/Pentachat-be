@@ -13,8 +13,8 @@ import com.hdtpt.pentachat.auth.service.AuthService;
 import com.hdtpt.pentachat.dto.response.ApiResponse;
 import com.hdtpt.pentachat.users.model.User;
 import com.hdtpt.pentachat.users.model.PasswordResetToken; // Import Token Model
-import com.hdtpt.pentachat.service.EmailService;
 import com.hdtpt.pentachat.users.repository.UserRepository;
+import com.hdtpt.pentachat.users.service.EmailService;
 import com.hdtpt.pentachat.users.repository.PasswordResetTokenRepository; // Import Token Repo
 
 import jakarta.validation.Valid;

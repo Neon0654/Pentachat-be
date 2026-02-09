@@ -1,4 +1,4 @@
-package com.hdtpt.pentachat.service;
+package com.hdtpt.pentachat.users.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;

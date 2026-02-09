@@ -135,14 +135,14 @@ public class MessageService {
                     // Support both personal and group messages
                     if (m.getType() != null) {
                         builder.type(m.getType().toString())
-                               .targetId(m.getTargetId());
+                                .targetId(m.getTargetId());
                     }
 
                     // For backward compatibility
                     if (m.getToUserId() != null) {
                         builder.to(m.getToUserId());
-                    } else if (m.getTargetId() != null && 
-                               m.getType() == Message.MessageType.PERSONAL) {
+                    } else if (m.getTargetId() != null &&
+                            m.getType() == Message.MessageType.PERSONAL) {
                         builder.to(m.getTargetId());
                     }
 
@@ -213,7 +213,7 @@ public class MessageService {
 
             List<Message> messages = dataApi.getGroupHistory(groupId);
             log.info("Retrieved {} messages from group {}", messages.size(), groupId);
-            
+
             return convertToResponseList(messages);
 
         } catch (Exception e) {
@@ -232,5 +232,89 @@ public class MessageService {
 
         // TODO: Implement WebSocket notification for group here
         // example: webSocketService.sendToGroup(groupId, message);
+    }
+
+    /**
+     * Create a direct message (from JpaDataApiImpl)
+     * 
+     * @param fromUserId Sender user ID
+     * @param toUserId   Recipient user ID
+     * @param content    Message content
+     * @return Created message entity
+     */
+    public Message createMessage(String fromUserId, String toUserId, String content) {
+        return dataApi.createMessage(fromUserId, toUserId, content);
+    }
+
+    /**
+     * Get messages by recipient user ID (from JpaDataApiImpl)
+     * 
+     * @param toUserId Recipient user ID
+     * @return List of messages
+     */
+    public List<Message> getMessagesByToUserId(String toUserId) {
+        return dataApi.getMessagesByToUserId(toUserId);
+    }
+
+    /**
+     * Get conversation between two users (from JpaDataApiImpl)
+     * 
+     * @param userId1 First user ID
+     * @param userId2 Second user ID
+     * @return List of messages in conversation
+     */
+    public List<Message> getConversationBetweenUsers(String userId1, String userId2) {
+        return dataApi.getConversationBetweenUsers(userId1, userId2);
+    }
+
+    /**
+     * Mark message as read (from JpaDataApiImpl)
+     * 
+     * @param messageId Message ID
+     */
+    public void markMessageAsRead(String messageId) {
+        dataApi.markMessageAsRead(messageId);
+    }
+
+    /**
+     * Delete message by ID (from JpaDataApiImpl)
+     * 
+     * @param messageId Message ID
+     */
+    public void deleteMessageById(String messageId) {
+        dataApi.deleteMessage(messageId);
+    }
+
+    /**
+     * Create a group message (from JpaDataApiImpl)
+     * 
+     * @param fromUserId Sender user ID
+     * @param groupId    Group ID
+     * @param content    Message content
+     * @return Created message entity
+     */
+    public Message createGroupMessage(String fromUserId, String groupId, String content) {
+        return dataApi.createGroupMessage(fromUserId, groupId, content);
+    }
+
+    /**
+     * Get group message history (from JpaDataApiImpl)
+     * 
+     * @param groupId Group ID
+     * @return List of messages in group
+     */
+    public List<Message> getGroupMessageHistory(String groupId) {
+        return dataApi.getGroupHistory(groupId);
+    }
+
+    /**
+     * Get messages by target ID and type (from JpaDataApiImpl)
+     * 
+     * @param targetId Target ID (user or group)
+     * @param type     Message type (PERSONAL or GROUP)
+     * @return List of messages
+     */
+    public List<Message> getMessagesByTargetIdAndType(String targetId, String type) {
+        return dataApi.getMessagesByTargetIdAndType(targetId, type);
     }
 }

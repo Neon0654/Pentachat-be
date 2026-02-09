@@ -18,24 +18,34 @@ public class MockDataStore {
     private final List<Wallet> wallets = new ArrayList<>();
     private final List<Transaction> transactions = new ArrayList<>();
     private final List<com.hdtpt.pentachat.message.model.Message> messages = new ArrayList<>();
-    
+
     // ============ GROUP DATA ============
     private final List<Group> groups = new ArrayList<>(); // Danh sách lưu trữ nhóm
 
     // ============ USER OPERATIONS ============
-    public void addUser(User user) { users.add(user); }
+    public void addUser(User user) {
+        users.add(user);
+    }
+
     public User findUserByUsername(String username) {
         return users.stream().filter(u -> u.getUsername().equals(username)).findFirst().orElse(null);
     }
+
     public User findUserById(String id) {
         return users.stream().filter(u -> u.getId().equals(id)).findFirst().orElse(null);
     }
+
     public boolean userExists(String username) {
         return users.stream().anyMatch(u -> u.getUsername().equals(username));
     }
-    public List<User> getAllUsers() { return new ArrayList<>(users); }
+
+    public List<User> getAllUsers() {
+        return new ArrayList<>(users);
+    }
+
     public List<User> searchUsers(String query) {
-        if (query == null || query.trim().isEmpty()) return List.of(); 
+        if (query == null || query.trim().isEmpty())
+            return List.of();
         return users.stream()
                 .filter(u -> u.getUsername().toLowerCase().contains(query.toLowerCase()))
                 .collect(Collectors.toList());
@@ -73,10 +83,14 @@ public class MockDataStore {
     }
 
     // ============ WALLET OPERATIONS ============
-    public void addWallet(Wallet wallet) { wallets.add(wallet); }
+    public void addWallet(Wallet wallet) {
+        wallets.add(wallet);
+    }
+
     public Wallet findWalletByUserId(String userId) {
         return wallets.stream().filter(w -> w.getUserId().equals(userId)).findFirst().orElse(null);
     }
+
     public boolean updateWalletBalance(String userId, Double newBalance) {
         Wallet wallet = findWalletByUserId(userId);
         if (wallet != null) {
@@ -87,7 +101,10 @@ public class MockDataStore {
     }
 
     // ============ TRANSACTION OPERATIONS ============
-    public void addTransaction(Transaction transaction) { transactions.add(transaction); }
+    public void addTransaction(Transaction transaction) {
+        transactions.add(transaction);
+    }
+
     public List<Transaction> findTransactionsByUserId(String userId) {
         return transactions.stream()
                 .filter(t -> userId.equals(t.getFromUserId()) || userId.equals(t.getToUserId()))
@@ -95,32 +112,40 @@ public class MockDataStore {
     }
 
     // ============ MESSAGE OPERATIONS ============
-    public void addMessage(com.hdtpt.pentachat.message.model.Message message) { messages.add(message); }
+    public void addMessage(com.hdtpt.pentachat.message.model.Message message) {
+        messages.add(message);
+    }
+
     public List<com.hdtpt.pentachat.message.model.Message> findMessagesByToUserId(String toUserId) {
         return messages.stream().filter(m -> m.getToUserId().equals(toUserId)).toList();
     }
+
     public List<com.hdtpt.pentachat.message.model.Message> findMessagesBetweenUsers(String userId1, String userId2) {
         return messages.stream()
                 .filter(m -> (m.getFromUserId().equals(userId1) && m.getToUserId().equals(userId2)) ||
                         (m.getFromUserId().equals(userId2) && m.getToUserId().equals(userId1)))
                 .toList();
     }
+
     public void markMessageAsRead(String messageId) {
         messages.stream().filter(m -> m.getId().equals(messageId)).findFirst().ifPresent(m -> m.setIsRead(true));
     }
-    public void deleteMessage(String messageId) { messages.removeIf(m -> m.getId().equals(messageId)); }
+
+    public void deleteMessage(String messageId) {
+        messages.removeIf(m -> m.getId().equals(messageId));
+    }
 
     /**
      * Find messages by targetId and type
      */
     public List<com.hdtpt.pentachat.message.model.Message> findMessagesByTargetIdAndType(String targetId, String type) {
         try {
-            com.hdtpt.pentachat.message.model.Message.MessageType messageType = 
-                com.hdtpt.pentachat.message.model.Message.MessageType.valueOf(type.toUpperCase());
+            com.hdtpt.pentachat.message.model.Message.MessageType messageType = com.hdtpt.pentachat.message.model.Message.MessageType
+                    .valueOf(type.toUpperCase());
             return messages.stream()
-                    .filter(m -> m.getTargetId() != null && 
-                                m.getTargetId().equals(targetId) &&
-                                m.getType() == messageType)
+                    .filter(m -> m.getTargetId() != null &&
+                            m.getTargetId().equals(targetId) &&
+                            m.getType() == messageType)
                     .toList();
         } catch (IllegalArgumentException e) {
             return new ArrayList<>();
@@ -135,19 +160,4 @@ public class MockDataStore {
         messages.clear();
         groups.clear(); // Xóa cả nhóm khi reset
     }
-<<<<<<< HEAD
-    
-    public List<User> searchUsers(String query) {
-    if (query == null || query.trim().isEmpty()) {
-        return List.of(); 
-    }
-    
-    // Quét trực tiếp trên List users
-    return users.stream()
-            .filter(u -> u.getUsername().toLowerCase().contains(query.toLowerCase()))
-            .collect(Collectors.toList());
 }
-}
-=======
-}
->>>>>>> origin/create_group
