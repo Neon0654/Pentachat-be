@@ -105,7 +105,7 @@ public class ApiResponse {
 
 ## 7. Database Convention
 - Table name: `snake_case` (số nhiều)
-- Primary key: `id` (String UUID)
+- Primary key: `id` (long)
 - **KHÔNG dùng Foreign Key constraint** trong database
   - Lưu reference bằng ID field (vd: `userId`, `fromUserId`, `toUserId`)
   - Xử lý quan hệ và validation trên **code/application layer**

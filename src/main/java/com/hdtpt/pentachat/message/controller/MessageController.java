@@ -80,7 +80,7 @@ public class MessageController {
      * GET /message/inbox/{userId}
      */
     @GetMapping("/inbox/{userId}")
-    public ResponseEntity<ApiResponse> getInbox(@PathVariable String userId) {
+    public ResponseEntity<ApiResponse> getInbox(@PathVariable Long userId) {
         try {
             List<MessageResponse> messages = messageService.getUserInbox(userId);
 
@@ -110,8 +110,8 @@ public class MessageController {
      */
     @GetMapping("/conversation/{userId1}/{userId2}")
     public ResponseEntity<ApiResponse> getConversation(
-            @PathVariable String userId1,
-            @PathVariable String userId2) {
+            @PathVariable Long userId1,
+            @PathVariable Long userId2) {
         try {
             List<MessageResponse> messages = messageService.getConversation(userId1, userId2);
 
@@ -141,8 +141,8 @@ public class MessageController {
      */
     @PostMapping("/read/{userId}/{messageId}")
     public ResponseEntity<ApiResponse> markAsRead(
-            @PathVariable String userId,
-            @PathVariable String messageId) {
+            @PathVariable Long userId,
+            @PathVariable Long messageId) {
         try {
             messageService.markAsRead(userId, messageId);
 
@@ -171,8 +171,8 @@ public class MessageController {
      */
     @DeleteMapping("/{userId}/{messageId}")
     public ResponseEntity<ApiResponse> deleteMessage(
-            @PathVariable String userId,
-            @PathVariable String messageId) {
+            @PathVariable Long userId,
+            @PathVariable Long messageId) {
         try {
             messageService.deleteMessage(userId, messageId);
 
@@ -200,7 +200,7 @@ public class MessageController {
      * GET /message/status/{userId}
      */
     @GetMapping("/status/{userId}")
-    public ResponseEntity<ApiResponse> checkUserStatus(@PathVariable String userId) {
+    public ResponseEntity<ApiResponse> checkUserStatus(@PathVariable Long userId) {
         boolean isOnline = SessionManager.isUserOnline(userId);
         SessionManager.SessionInfo session = SessionManager.getUserSession(userId);
 
@@ -211,5 +211,81 @@ public class MessageController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Gửi tin nhắn nhóm
+     * POST /api/messages/group/send
+     * 
+     * Input: {"from": "user1", "groupId": "group123", "content": "hello group"}
+     */
+    @PostMapping("/group/send")
+    public ResponseEntity<ApiResponse> sendGroupMessage(
+            @Valid @RequestBody MessageRequest request) {
+        try {
+            if (request.getGroupId() == null) {
+                return ResponseEntity.badRequest().body(
+                        ApiResponse.builder()
+                                .success(false)
+                                .message("groupId is required for group messages")
+                                .build());
+            }
+
+            log.info("Sending group message to group {} from user {}: {}",
+                    request.getGroupId(), request.getFrom(), request.getContent());
+
+            // Gọi hàm pushToGroup để gửi tin nhắn nhóm
+            MessageResponse message = messageService.pushToGroup(
+                    request.getFrom(),
+                    request.getGroupId(),
+                    request.getContent());
+
+            ApiResponse response = ApiResponse.builder()
+                    .success(true)
+                    .message("Group message sent successfully")
+                    .data(message)
+                    .build();
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error sending group message: {}", e.getMessage());
+
+            ApiResponse response = ApiResponse.builder()
+                    .success(false)
+                    .message("Failed to send group message: " + e.getMessage())
+                    .build();
+
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    /**
+     * Lấy lịch sử tin nhắn của một nhóm
+     * GET /api/messages/group/{groupId}
+     */
+    @GetMapping("/group/{groupId}")
+    public ResponseEntity<ApiResponse> getGroupHistory(@PathVariable Long groupId) {
+        try {
+            List<MessageResponse> messages = messageService.getGroupHistory(groupId);
+
+            ApiResponse response = ApiResponse.builder()
+                    .success(true)
+                    .message("Group history retrieved successfully")
+                    .data(messages)
+                    .build();
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error retrieving group history: {}", e.getMessage());
+
+            ApiResponse response = ApiResponse.builder()
+                    .success(false)
+                    .message("Failed to retrieve group history: " + e.getMessage())
+                    .build();
+
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 }
