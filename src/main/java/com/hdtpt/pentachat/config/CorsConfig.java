@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import java.util.List;
 
 /**
  * CORS Configuration
@@ -19,7 +20,7 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // Allow all origins for development
-        config.addAllowedOrigin("http://localhost:5173");
+        config.setAllowedOriginPatterns(List.of("*"));
 
         // Allow all headers
         config.addAllowedHeader("*");

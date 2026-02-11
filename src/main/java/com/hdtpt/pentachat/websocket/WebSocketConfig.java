@@ -33,7 +33,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // Đăng ký endpoint /ws với SockJS fallback
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("http://localhost:5173") // Allow all origins cho testing
+                .setAllowedOriginPatterns("*") // Allow all origins cho testing
                 .withSockJS(); // Enable SockJS fallback
     }
 }
