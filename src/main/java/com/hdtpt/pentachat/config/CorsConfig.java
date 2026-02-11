@@ -19,8 +19,7 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // Allow all origins for development
-        config.addAllowedOrigin("*");
-        config.addAllowedOriginPattern("*");
+        config.addAllowedOrigin("http://localhost:5173");
 
         // Allow all headers
         config.addAllowedHeader("*");
@@ -29,7 +28,7 @@ public class CorsConfig {
         config.addAllowedMethod("*");
 
         // Allow credentials
-        config.setAllowCredentials(false); // Must be false when using "*" for origins
+        config.setAllowCredentials(true); // Must be false when using "*" for origins
 
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);

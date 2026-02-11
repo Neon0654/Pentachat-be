@@ -76,4 +76,38 @@ class MessageServiceTest {
         List<MessageResponse> history = messageService.getGroupHistory(10L);
         assertEquals(2, history.size());
     }
+
+    @Test
+    @DisplayName("Should reject markAsRead when user is not recipient")
+    void testMarkAsRead_UnauthorizedUser() {
+        MessageResponse response = messageService.pushToUser(1L, 2L, "Private message");
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> messageService.markAsRead(3L, response.getId()));
+
+        assertEquals("User is not allowed to mark this message as read", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should reject deleteMessage when user is unrelated")
+    void testDeleteMessage_UnauthorizedUser() {
+        MessageResponse response = messageService.pushToUser(1L, 2L, "Do not delete");
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> messageService.deleteMessage(3L, response.getId()));
+
+        assertEquals("User is not allowed to delete this message", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should allow sender to delete message")
+    void testDeleteMessage_SenderCanDelete() {
+        MessageResponse response = messageService.pushToUser(1L, 2L, "Delete by sender");
+
+        messageService.deleteMessage(1L, response.getId());
+
+        assertTrue(messageRepository.findById(response.getId()).isEmpty());
+    }
 }
