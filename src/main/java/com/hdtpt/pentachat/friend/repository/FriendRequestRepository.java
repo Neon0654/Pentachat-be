@@ -33,4 +33,9 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
             "(fr.fromUserId = :userId2 AND fr.toUserId = :userId1)) AND " +
             "fr.status = 'ACCEPTED'")
     boolean areFriends(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
+
+    @Query("SELECT fr FROM FriendRequest fr WHERE " +
+            "(fr.fromUserId = :userId OR fr.toUserId = :userId) AND " +
+            "fr.status = 'ACCEPTED'")
+    List<FriendRequest> findAllFriends(@Param("userId") Long userId);
 }

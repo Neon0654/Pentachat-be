@@ -22,6 +22,8 @@ public class MessageResponse {
     private String type; // PERSONAL or GROUP
 
     private String content;
+    private String fromUsername;
+    private String toUsername;
     private LocalDateTime createdAt;
     private Boolean isRead;
 }

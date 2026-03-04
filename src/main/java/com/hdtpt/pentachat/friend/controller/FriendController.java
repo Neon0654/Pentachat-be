@@ -29,9 +29,12 @@ import java.util.stream.Collectors;
 public class FriendController {
 
     private final FriendService friendService;
+    private final com.hdtpt.pentachat.identity.repository.UserRepository userRepository;
 
-    public FriendController(FriendService friendService) {
+    public FriendController(FriendService friendService,
+            com.hdtpt.pentachat.identity.repository.UserRepository userRepository) {
         this.friendService = friendService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -47,9 +50,16 @@ public class FriendController {
             log.info("Sending friend request from {} to {}",
                     request.getFromUserId(), request.getToUserId());
 
-            FriendRequest friendRequest = friendService.sendFriendRequest(
-                    request.getFromUserId(),
-                    request.getToUserId());
+            FriendRequest friendRequest;
+            if (request.getToUsername() != null && !request.getToUsername().trim().isEmpty()) {
+                friendRequest = friendService.sendFriendRequestByUsername(
+                        request.getFromUserId(),
+                        request.getToUsername());
+            } else {
+                friendRequest = friendService.sendFriendRequest(
+                        request.getFromUserId(),
+                        request.getToUserId());
+            }
 
             FriendRequestDTO responseDTO = convertToDTO(friendRequest);
 
@@ -213,13 +223,50 @@ public class FriendController {
     }
 
     /**
+     * Lấy danh sách bạn bè đã kết bạn
+     * GET /api/friends/list/{userId}
+     */
+    @GetMapping("/list/{userId}")
+    public ResponseEntity<ApiResponse> getFriendsList(
+            @PathVariable Long userId) {
+        try {
+            log.info("Getting friends list for user: {}", userId);
+
+            List<FriendRequest> friends = friendService.getFriendsList(userId);
+            List<FriendRequestDTO> responseDTOs = friends.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(ApiResponse.builder()
+                    .success(true)
+                    .message("Friends list retrieved successfully")
+                    .data(responseDTOs)
+                    .build());
+
+        } catch (Exception e) {
+            log.error("Error getting friends list: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body(ApiResponse.builder()
+                    .success(false)
+                    .message("Error getting friends list")
+                    .build());
+        }
+    }
+
+    /**
      * Convert FriendRequest entity to DTO
      */
     private FriendRequestDTO convertToDTO(FriendRequest friendRequest) {
+        String fromUsername = userRepository.findById(friendRequest.getFromUserId())
+                .map(u -> u.getUsername()).orElse("Unknown");
+        String toUsername = userRepository.findById(friendRequest.getToUserId())
+                .map(u -> u.getUsername()).orElse("Unknown");
+
         return FriendRequestDTO.builder()
                 .id(friendRequest.getId())
                 .fromUserId(friendRequest.getFromUserId())
                 .toUserId(friendRequest.getToUserId())
+                .fromUsername(fromUsername)
+                .toUsername(toUsername)
                 .status(friendRequest.getStatus())
                 .createdAt(friendRequest.getCreatedAt())
                 .updatedAt(friendRequest.getUpdatedAt())

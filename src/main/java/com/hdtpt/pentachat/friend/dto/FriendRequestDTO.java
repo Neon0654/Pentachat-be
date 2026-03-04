@@ -22,10 +22,13 @@ public class FriendRequestDTO {
     @NotNull(message = "fromUserId cannot be null")
     private Long fromUserId;
 
-    @NotNull(message = "toUserId cannot be null")
     private Long toUserId;
 
+    private String fromUsername;
+
     private String status;
+
+    private String toUsername;
 
     private LocalDateTime createdAt;
 

@@ -3,11 +3,14 @@ package com.hdtpt.pentachat.message.service;
 import com.hdtpt.pentachat.message.repository.MessageRepository;
 import com.hdtpt.pentachat.message.dto.response.MessageResponse;
 import com.hdtpt.pentachat.message.model.Message;
+import com.hdtpt.pentachat.identity.repository.UserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Message Service - Xử lý logic gửi/nhận messages
@@ -20,9 +23,15 @@ import java.util.List;
 public class MessageService {
 
     private final MessageRepository messageRepository;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final UserRepository userRepository;
 
-    public MessageService(MessageRepository messageRepository) {
+    public MessageService(MessageRepository messageRepository,
+            SimpMessagingTemplate messagingTemplate,
+            UserRepository userRepository) {
         this.messageRepository = messageRepository;
+        this.messagingTemplate = messagingTemplate;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -68,9 +77,9 @@ public class MessageService {
 
             log.info("Message pushed to user {} from user {}: {}", toUserId, fromUserId, content);
 
-            // Ở đây bạn có thể thêm logic để gửi push notification
-            // hoặc WebSocket event để thông báo cho người nhận
+            // Notify BOTH users (sender and recipient) for real-time UI updates
             notifyUserNewMessage(toUserId, response);
+            notifyUserNewMessage(fromUserId, response);
 
             return response;
 
@@ -88,8 +97,14 @@ public class MessageService {
         log.info("🔔 NOTIFICATION: User {} has new message from {} - '{}'",
                 userId, message.getFromId(), message.getContent());
 
-        // TODO: Implement WebSocket notification here
-        // example: webSocketService.sendToUser(userId, message);
+        try {
+            // Gửi qua WebSocket topic mà user đang subscribe
+            // Topic format: /topic/messages/{userId} theo cấu hình frontend
+            messagingTemplate.convertAndSend("/topic/messages/" + userId, message);
+            log.info("WS: Message sent to /topic/messages/{}", userId);
+        } catch (Exception e) {
+            log.error("Failed to send WebSocket notification: {}", e.getMessage());
+        }
     }
 
     /**
@@ -113,17 +128,45 @@ public class MessageService {
      * Đánh dấu message là đã đọc
      */
     public void markAsRead(Long userId, Long messageId) {
-        messageRepository.findById(messageId).ifPresent(m -> {
-            m.setIsRead(true);
-            messageRepository.save(m);
-        });
+        if (userId == null) {
+            throw new IllegalArgumentException("userId cannot be null");
+        }
+        if (messageId == null) {
+            throw new IllegalArgumentException("messageId cannot be null");
+        }
+
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("Message not found"));
+
+        if (!Objects.equals(message.getToUserId(), userId)) {
+            throw new IllegalArgumentException("User is not allowed to mark this message as read");
+        }
+
+        message.setIsRead(true);
+        messageRepository.save(message);
     }
 
     /**
      * Xóa message
      */
     public void deleteMessage(Long userId, Long messageId) {
-        messageRepository.deleteById(messageId);
+        if (userId == null) {
+            throw new IllegalArgumentException("userId cannot be null");
+        }
+        if (messageId == null) {
+            throw new IllegalArgumentException("messageId cannot be null");
+        }
+
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("Message not found"));
+
+        boolean isSender = Objects.equals(message.getFromUserId(), userId);
+        boolean isRecipient = Objects.equals(message.getToUserId(), userId);
+        if (!isSender && !isRecipient) {
+            throw new IllegalArgumentException("User is not allowed to delete this message");
+        }
+
+        messageRepository.delete(message);
     }
 
     /**
@@ -152,9 +195,20 @@ public class MessageService {
                     // For backward compatibility
                     if (m.getToUserId() != null) {
                         builder.toId(m.getToUserId());
-                    } else if (m.getTargetId() != null &&
-                            m.getType() == Message.MessageType.PERSONAL) {
+                    } else if (m.getTargetId() != null && m.getType() == Message.MessageType.PERSONAL) {
                         builder.toId(m.getTargetId());
+                    }
+
+                    // Populate usernames
+                    userRepository.findById(m.getFromUserId())
+                            .ifPresent(u -> builder.fromUsername(u.getUsername()));
+
+                    if (m.getToUserId() != null) {
+                        userRepository.findById(m.getToUserId())
+                                .ifPresent(u -> builder.toUsername(u.getUsername()));
+                    } else if (m.getTargetId() != null && m.getType() == Message.MessageType.PERSONAL) {
+                        userRepository.findById(m.getTargetId())
+                                .ifPresent(u -> builder.toUsername(u.getUsername()));
                     }
 
                     return builder.build();
@@ -247,8 +301,13 @@ public class MessageService {
         log.info("🔔 GROUP NOTIFICATION: Group {} has new message from {} - '{}'",
                 groupId, message.getFromId(), message.getContent());
 
-        // TODO: Implement WebSocket notification for group here
-        // example: webSocketService.sendToGroup(groupId, message);
+        try {
+            // Gửi qua WebSocket topic cho nhóm
+            messagingTemplate.convertAndSend("/topic/groups/" + groupId, message);
+            log.info("WS: Group message sent to /topic/groups/{}", groupId);
+        } catch (Exception e) {
+            log.error("Failed to send WebSocket group notification: {}", e.getMessage());
+        }
     }
 
     /**

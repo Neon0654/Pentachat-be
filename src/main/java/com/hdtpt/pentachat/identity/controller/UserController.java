@@ -13,6 +13,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hdtpt.pentachat.identity.dto.response.DashboardStatsResponse;
+import com.hdtpt.pentachat.message.repository.MessageRepository;
+import com.hdtpt.pentachat.friend.repository.FriendRequestRepository;
+import com.hdtpt.pentachat.groups.repository.GroupRepository;
+import com.hdtpt.pentachat.finance.service.WalletService;
+import com.hdtpt.pentachat.finance.model.Wallet;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,9 +28,21 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserService userService;
+    private final MessageRepository messageRepository;
+    private final FriendRequestRepository friendRequestRepository;
+    private final GroupRepository groupRepository;
+    private final WalletService walletService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService,
+            MessageRepository messageRepository,
+            FriendRequestRepository friendRequestRepository,
+            GroupRepository groupRepository,
+            WalletService walletService) {
         this.userService = userService;
+        this.messageRepository = messageRepository;
+        this.friendRequestRepository = friendRequestRepository;
+        this.groupRepository = groupRepository;
+        this.walletService = walletService;
     }
 
     private Long getAuthenticatedUser(Long userId, String sessionId) {
@@ -35,6 +54,39 @@ public class UserController {
             throw new AppException(HttpStatus.UNAUTHORIZED, "Invalid session.");
         }
         return userId;
+    }
+
+    @GetMapping("/dashboard/stats")
+    public ResponseEntity<ApiResponse> getDashboardStats(@RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-Session-Id") String sessionId) {
+        getAuthenticatedUser(userId, sessionId);
+
+        long messageCount = messageRepository.findByToUserId(userId).size();
+        long friendCount = friendRequestRepository.findAllFriends(userId).size();
+        long groupCount = groupRepository.findByMemberId(userId).size();
+
+        Double balance = 0.0;
+        try {
+            Wallet wallet = walletService.getBalance(userId);
+            if (wallet != null) {
+                balance = wallet.getBalance();
+            }
+        } catch (Exception e) {
+            // Log error but continue with zero balance
+        }
+
+        DashboardStatsResponse stats = DashboardStatsResponse.builder()
+                .messageCount(messageCount)
+                .friendCount(friendCount)
+                .groupCount(groupCount)
+                .walletBalance(balance)
+                .build();
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Dashboard stats retrieved.")
+                .data(stats)
+                .build());
     }
 
     @GetMapping

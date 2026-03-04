@@ -136,6 +136,29 @@ class FriendServiceTest {
     }
 
     @Test
+    @DisplayName("Should reject reverse pending request")
+    void testSendFriendRequest_ReversePending() {
+        friendService.sendFriendRequest(user1.getId(), user2.getId());
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> friendService.sendFriendRequest(user2.getId(), user1.getId()));
+        assertEquals("User already sent you a friend request", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should re-send rejected friend request without creating duplicate")
+    void testSendFriendRequest_ResendRejected() {
+        FriendRequest request = friendService.sendFriendRequest(user1.getId(), user2.getId());
+        friendService.rejectFriend(request.getId());
+
+        FriendRequest resent = friendService.sendFriendRequest(user1.getId(), user2.getId());
+
+        assertEquals(request.getId(), resent.getId());
+        assertEquals("PENDING", resent.getStatus());
+    }
+
+    @Test
     @DisplayName("Should accept friend request successfully")
     void testAcceptFriend_Success() {
         // Given

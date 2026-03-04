@@ -6,7 +6,6 @@ import com.hdtpt.pentachat.identity.model.User;
 import com.hdtpt.pentachat.identity.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,10 +14,13 @@ import java.util.Optional;
  * 
  * Chứa các hàm:
  * - sendFriendRequest(fromId, toId): Gửi yêu cầu kết bạn
+ * - sendFriendRequestByUsername(fromId, toUsername): Gửi yêu cầu kết bạn qua
+ * username
  * - acceptFriend(requestId): Chấp nhận yêu cầu kết bạn
  * - rejectFriend(requestId): Từ chối yêu cầu kết bạn
  * - getPendingRequests(userId): Lấy danh sách yêu cầu đang chờ
  * - areFriends(userId1, userId2): Kiểm tra xem hai user có phải bạn bè không
+ * - getFriendsList(userId): Lấy danh sách bạn bè đã kết bạn
  */
 @Service
 @Slf4j
@@ -78,6 +80,21 @@ public class FriendService {
                     throw new IllegalArgumentException("Friend request already sent");
                 } else if (req.getStatus().equals("ACCEPTED")) {
                     throw new IllegalArgumentException("Users are already friends");
+                } else if (req.getStatus().equals("REJECTED")) {
+                    req.setStatus("PENDING");
+                    FriendRequest resent = friendRequestRepository.save(req);
+                    log.info("Friend request re-sent from {} to {}", fromId, toId);
+                    return resent;
+                }
+            }
+
+            Optional<FriendRequest> reverseRequest = friendRequestRepository.findByFromUserIdAndToUserId(toId, fromId);
+            if (reverseRequest.isPresent()) {
+                FriendRequest req = reverseRequest.get();
+                if (req.getStatus().equals("PENDING")) {
+                    throw new IllegalArgumentException("User already sent you a friend request");
+                } else if (req.getStatus().equals("ACCEPTED")) {
+                    throw new IllegalArgumentException("Users are already friends");
                 }
             }
 
@@ -96,6 +113,19 @@ public class FriendService {
             log.error("Error sending friend request: {}", e.getMessage());
             throw e;
         }
+    }
+
+    /**
+     * Gửi yêu cầu kết bạn bằng Username
+     *
+     * @param fromId     User ID của người gửi
+     * @param toUsername Username của người nhận
+     * @return FriendRequest
+     */
+    public FriendRequest sendFriendRequestByUsername(Long fromId, String toUsername) {
+        User toUser = userRepository.findByUsername(toUsername)
+                .orElseThrow(() -> new IllegalArgumentException("Người dùng '" + toUsername + "' không tồn tại"));
+        return sendFriendRequest(fromId, toUser.getId());
     }
 
     /**
@@ -218,6 +248,24 @@ public class FriendService {
 
         } catch (Exception e) {
             log.error("Error checking friendship: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Lấy danh sách bạn bè của user
+     * 
+     * @param userId User ID
+     * @return List<FriendRequest> - Danh sách các quan hệ bạn bè đã ACCEPTED
+     */
+    public List<FriendRequest> getFriendsList(Long userId) {
+        try {
+            if (userId == null) {
+                throw new IllegalArgumentException("userId cannot be null");
+            }
+            return friendRequestRepository.findAllFriends(userId);
+        } catch (Exception e) {
+            log.error("Error getting friends list: {}", e.getMessage());
             throw e;
         }
     }
