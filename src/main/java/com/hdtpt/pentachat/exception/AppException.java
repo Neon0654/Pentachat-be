@@ -23,6 +23,11 @@ public class AppException extends RuntimeException {
         this.status = HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
+    public AppException(String message, HttpStatus status) {
+        super(message);
+        this.status = status;
+    }
+
     public HttpStatus getStatus() {
         return status;
     }

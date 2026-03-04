@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional; // Import Trans
 
 import com.hdtpt.pentachat.identity.dto.request.LoginRequest;
 import com.hdtpt.pentachat.identity.dto.request.RegisterRequest;
+import com.hdtpt.pentachat.identity.dto.request.ChangePasswordRequest;
 import com.hdtpt.pentachat.identity.dto.response.AuthResponse;
 import com.hdtpt.pentachat.identity.service.AuthService;
 import com.hdtpt.pentachat.dto.response.ApiResponse;
@@ -16,6 +17,7 @@ import com.hdtpt.pentachat.identity.repository.UserRepository;
 import com.hdtpt.pentachat.identity.service.EmailService;
 import com.hdtpt.pentachat.exception.AppException;
 import com.hdtpt.pentachat.identity.repository.PasswordResetTokenRepository;
+import com.hdtpt.pentachat.security.SessionManager;
 
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -89,6 +91,38 @@ public class AuthController {
                 .success(true)
                 .message("Login successful")
                 .data(data)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    private Long getAuthenticatedUser(Long userId, String sessionId) {
+        if (userId == null || sessionId == null) {
+            throw new AppException(HttpStatus.UNAUTHORIZED, "User ID and Session ID headers are required.");
+        }
+        SessionManager.SessionInfo sessionInfo = SessionManager.getUserSession(userId);
+        if (sessionInfo == null || !sessionInfo.sessionId.equals(sessionId)) {
+            throw new AppException(HttpStatus.UNAUTHORIZED, "Invalid session.");
+        }
+        return userId;
+    }
+
+    /**
+     * Change password for logged-in user
+     * POST /auth/change-password
+     */
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse> changePassword(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-Session-Id") String sessionId,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        Long authenticatedUserId = getAuthenticatedUser(userId, sessionId);
+        authService.changePassword(authenticatedUserId, request.getCurrentPassword(), request.getNewPassword());
+
+        ApiResponse response = ApiResponse.builder()
+                .success(true)
+                .message("Password changed successfully")
+                .data(null)
                 .build();
 
         return ResponseEntity.ok(response);

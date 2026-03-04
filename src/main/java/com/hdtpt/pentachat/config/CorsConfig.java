@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import java.util.List;
 
 /**
  * CORS Configuration
@@ -19,8 +20,7 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // Allow all origins for development
-        config.addAllowedOrigin("*");
-        config.addAllowedOriginPattern("*");
+        config.setAllowedOriginPatterns(List.of("*"));
 
         // Allow all headers
         config.addAllowedHeader("*");
@@ -29,7 +29,7 @@ public class CorsConfig {
         config.addAllowedMethod("*");
 
         // Allow credentials
-        config.setAllowCredentials(false); // Must be false when using "*" for origins
+        config.setAllowCredentials(true); // Must be false when using "*" for origins
 
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);

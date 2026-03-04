@@ -102,4 +102,38 @@ public class AuthService {
     public String createSession(User user) {
         return SessionManager.createSession(user.getId(), user.getUsername());
     }
+
+    /**
+     * Change user's password
+     * 
+     * @param userId user's id
+     * @param currentPassword current password
+     * @param newPassword new password
+     * @return updated user
+     * @throws AppException if user not found or password invalid
+     */
+    public User changePassword(Long userId, String currentPassword, String newPassword) {
+        if (userId == null) {
+            throw new AppException("User ID is required");
+        }
+        if (currentPassword == null || currentPassword.trim().isEmpty()) {
+            throw new AppException("Current password cannot be empty");
+        }
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            throw new AppException("New password cannot be empty");
+        }
+        if (currentPassword.equals(newPassword)) {
+            throw new AppException("New password must be different from current password");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException("User not found"));
+
+        if (!user.getPassword().equals(currentPassword)) {
+            throw new AppException("Invalid current password");
+        }
+
+        user.setPassword(newPassword);
+        return userRepository.save(user);
+    }
 }
