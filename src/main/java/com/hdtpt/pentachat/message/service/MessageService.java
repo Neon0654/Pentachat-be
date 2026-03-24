@@ -9,8 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Message Service - Xử lý logic gửi/nhận messages
@@ -177,6 +181,22 @@ public class MessageService {
             return new ArrayList<>();
         }
 
+        Set<Long> userIds = new HashSet<>();
+        for (Message message : messages) {
+            if (message.getFromUserId() != null) {
+                userIds.add(message.getFromUserId());
+            }
+            if (message.getToUserId() != null) {
+                userIds.add(message.getToUserId());
+            } else if (message.getTargetId() != null && message.getType() == Message.MessageType.PERSONAL) {
+                userIds.add(message.getTargetId());
+            }
+        }
+
+        Map<Long, String> usernamesById = new HashMap<>();
+        userRepository.findAllById(userIds)
+                .forEach(user -> usernamesById.put(user.getId(), user.getUsername()));
+
         return messages.stream()
                 .map(m -> {
                     MessageResponse.MessageResponseBuilder builder = MessageResponse.builder()
@@ -199,16 +219,12 @@ public class MessageService {
                         builder.toId(m.getTargetId());
                     }
 
-                    // Populate usernames
-                    userRepository.findById(m.getFromUserId())
-                            .ifPresent(u -> builder.fromUsername(u.getUsername()));
+                    builder.fromUsername(usernamesById.get(m.getFromUserId()));
 
                     if (m.getToUserId() != null) {
-                        userRepository.findById(m.getToUserId())
-                                .ifPresent(u -> builder.toUsername(u.getUsername()));
+                        builder.toUsername(usernamesById.get(m.getToUserId()));
                     } else if (m.getTargetId() != null && m.getType() == Message.MessageType.PERSONAL) {
-                        userRepository.findById(m.getTargetId())
-                                .ifPresent(u -> builder.toUsername(u.getUsername()));
+                        builder.toUsername(usernamesById.get(m.getTargetId()));
                     }
 
                     return builder.build();

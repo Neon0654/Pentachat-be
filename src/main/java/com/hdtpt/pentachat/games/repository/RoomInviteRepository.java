@@ -5,6 +5,7 @@ import com.hdtpt.pentachat.games.model.RoomInvite;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RoomInviteRepository extends JpaRepository<RoomInvite, Long> {
@@ -14,4 +15,6 @@ public interface RoomInviteRepository extends JpaRepository<RoomInvite, Long> {
     List<RoomInvite> findByRoomIdAndStatus(Long roomId, InviteStatus status);
 
     List<RoomInvite> findByRoomId(Long roomId);
+
+    Optional<RoomInvite> findByRoomIdAndInviteeId(Long roomId, Long inviteeId);
 }
