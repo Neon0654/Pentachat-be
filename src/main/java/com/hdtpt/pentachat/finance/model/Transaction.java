@@ -13,7 +13,7 @@ import com.hdtpt.pentachat.util.BaseEntity;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Transaction extends BaseEntity{
+public class Transaction extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

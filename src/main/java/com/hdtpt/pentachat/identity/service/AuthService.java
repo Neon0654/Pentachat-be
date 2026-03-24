@@ -1,6 +1,7 @@
 package com.hdtpt.pentachat.identity.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.hdtpt.pentachat.identity.repository.UserRepository;
 import com.hdtpt.pentachat.finance.service.WalletService;
@@ -20,13 +21,16 @@ public class AuthService {
     private final UserRepository userRepository;
     private final ProfileService profileService;
     private final WalletService walletService;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthService(UserRepository userRepository,
             ProfileService profileService,
-            WalletService walletService) {
+            WalletService walletService,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.profileService = profileService;
         this.walletService = walletService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -54,7 +58,7 @@ public class AuthService {
         // Create user
         User newUser = User.builder()
                 .username(username)
-                .password(password)
+                .password(passwordEncoder.encode(password))
                 .build();
         newUser = userRepository.save(newUser);
 
@@ -86,7 +90,7 @@ public class AuthService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException("Invalid username or password"));
 
-        if (!user.getPassword().equals(password)) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new AppException("Invalid username or password");
         }
 
@@ -106,9 +110,9 @@ public class AuthService {
     /**
      * Change user's password
      * 
-     * @param userId user's id
+     * @param userId          user's id
      * @param currentPassword current password
-     * @param newPassword new password
+     * @param newPassword     new password
      * @return updated user
      * @throws AppException if user not found or password invalid
      */
@@ -129,11 +133,26 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException("User not found"));
 
-        if (!user.getPassword().equals(currentPassword)) {
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw new AppException("Invalid current password");
         }
 
-        user.setPassword(newPassword);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        return userRepository.save(user);
+    }
+
+    public User resetPassword(Long userId, String newPassword) {
+        if (userId == null) {
+            throw new AppException("User ID is required");
+        }
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            throw new AppException("New password cannot be empty");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException("User not found"));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
         return userRepository.save(user);
     }
 }
