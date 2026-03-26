@@ -1,8 +1,7 @@
 package com.hdtpt.pentachat.games.service;
 
-import org.springframework.stereotype.Service;
-
 import com.hdtpt.pentachat.games.model.Room;
+import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,39 +9,45 @@ import java.util.Map;
 @Service
 public class GameRoomService {
 
-    // Giả lập bảng rooms (sau này thay bằng DB)
+    // Gia lap bang rooms tam thoi cho luong view controller.
     private final Map<Long, Room> rooms = new HashMap<>();
 
     public GameRoomService() {
-        rooms.put(1L, new Room(1L, "WAITING"));
-        rooms.put(2L, new Room(2L, "WAITING"));
+        rooms.put(1L, Room.builder()
+                .id(1L)
+                .roomCode("ROOM-1")
+                .status("WAITING")
+                .build());
+        rooms.put(2L, Room.builder()
+                .id(2L)
+                .roomCode("ROOM-2")
+                .status("WAITING")
+                .build());
     }
 
-    // START GAME
     public void startGame(Long roomId) {
         Room room = rooms.get(roomId);
 
         if (room == null) {
-            throw new RuntimeException("Room không tồn tại");
+            throw new RuntimeException("Room khong ton tai");
         }
 
         if (!"WAITING".equals(room.getStatus())) {
-            throw new RuntimeException("Không thể start game. Trạng thái hiện tại: " + room.getStatus());
+            throw new RuntimeException("Khong the start game. Trang thai hien tai: " + room.getStatus());
         }
 
         room.setStatus("PLAYING");
     }
 
-    // END GAME
     public void endGame(Long roomId) {
         Room room = rooms.get(roomId);
 
         if (room == null) {
-            throw new RuntimeException("Room không tồn tại");
+            throw new RuntimeException("Room khong ton tai");
         }
 
         if (!"PLAYING".equals(room.getStatus())) {
-            throw new RuntimeException("Không thể end game. Trạng thái hiện tại: " + room.getStatus());
+            throw new RuntimeException("Khong the end game. Trang thai hien tai: " + room.getStatus());
         }
 
         room.setStatus("ENDED");
@@ -51,7 +56,7 @@ public class GameRoomService {
     public Room getRoom(Long roomId) {
         Room room = rooms.get(roomId);
         if (room == null) {
-            throw new RuntimeException("Room khÃ´ng tá»“n táº¡i");
+            throw new RuntimeException("Room khong ton tai");
         }
         return room;
     }

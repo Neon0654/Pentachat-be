@@ -23,7 +23,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         config.enableSimpleBroker("/topic", "/queue");
 
         // 2. Prefix cho các message từ client gửi lên (giữ nguyên)
-        config.setApplicationDestinationPrefixes("/app");
+        // [CẬP NHẬT] Thêm "/topic" để @SubscribeMapping trong Controller có thể bắt được các lệnh subscribe từ client
+        config.setApplicationDestinationPrefixes("/app", "/topic");
 
         // 3. [QUAN TRỌNG] Định nghĩa tiền tố cho tin nhắn riêng tư
         config.setUserDestinationPrefix("/user");

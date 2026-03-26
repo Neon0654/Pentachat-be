@@ -1,31 +1,35 @@
 package com.hdtpt.pentachat.games.model;
 
-public class Room {
+import com.hdtpt.pentachat.util.BaseEntity;
+import jakarta.persistence.*;
+import lombok.*;
 
+/**
+ * Phòng chơi Poker.
+ */
+@Entity
+@Table(name = "poker_rooms")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+public class Room extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String status; // WAITING, PLAYING, ENDED
 
-    public Room() {
-    }
+    @Column(unique = true, nullable = false)
+    private String roomCode;
 
-    public Room(Long id, String status) {
-        this.id = id;
-        this.status = status;
-    }
+    @Column(nullable = false)
+    private String status; // WAITING (Chờ), PLAYING (Đang chơi), ENDED (Kết thúc)
 
-    public Long getId() {
-        return id;
-    }
+    private int maxPlayers;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    private Double minBet;
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
+    @Column(name = "host_id")
+    private Long hostId;
 }
