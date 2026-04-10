@@ -9,5 +9,4 @@ public class DashboardStatsResponse {
     private long messageCount;
     private long friendCount;
     private long groupCount;
-    private Double walletBalance;
 }
