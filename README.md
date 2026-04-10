@@ -112,6 +112,13 @@ mvn test
 
 ---
 
+## 📖 API Documentation
+Hệ thống tích hợp Swagger UI để hỗ trợ tra cứu và test API trực quan:
+- **Swagger UI**: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+- **Hướng dẫn chi tiết**: Xem tại [SWAGGER_GUIDE.md](file:///d:/NewFolder/Pentachat-be/SWAGGER_GUIDE.md)
+
+---
+
 ## 📄 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
