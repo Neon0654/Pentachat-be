@@ -10,11 +10,4 @@ public class ProjectGaugeApplication {
         SpringApplication.run(ProjectGaugeApplication.class, args);
     }
 
-    // // --- ĐOẠN CODE TỰ ĐỘNG TẠO GAME MINI ---
-    // @Bean
-    // CommandLineRunner initData(GameService gameService) {
-    // return args -> {
-    // gameService.createDummyGames(); // Tự động tạo Cờ Caro, Rắn săn mồi...
-    // };
-    // }
 }

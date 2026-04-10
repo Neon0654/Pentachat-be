@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.hdtpt.pentachat.identity.repository.UserRepository;
-import com.hdtpt.pentachat.finance.service.WalletService;
 import com.hdtpt.pentachat.exception.AppException;
 import com.hdtpt.pentachat.security.SessionManager;
 import com.hdtpt.pentachat.identity.model.User;
@@ -20,16 +19,13 @@ import com.hdtpt.pentachat.identity.model.User;
 public class AuthService {
     private final UserRepository userRepository;
     private final ProfileService profileService;
-    private final WalletService walletService;
     private final PasswordEncoder passwordEncoder;
 
     public AuthService(UserRepository userRepository,
             ProfileService profileService,
-            WalletService walletService,
             PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.profileService = profileService;
-        this.walletService = walletService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -62,9 +58,7 @@ public class AuthService {
                 .build();
         newUser = userRepository.save(newUser);
 
-        // Create wallet and profile for new user
         profileService.createProfile(newUser.getId());
-        walletService.createWallet(newUser.getId(), 0.0);
 
         return newUser;
     }
