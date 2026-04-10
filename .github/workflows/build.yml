@@ -2,7 +2,7 @@ name: Build Spring Boot App
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "main" , "develop" ]
 
 jobs:
   build:
