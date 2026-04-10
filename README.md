@@ -71,7 +71,7 @@ src/main/java/com/hdtpt/pentachat/
 ### Prerequisites
 - Java 21 JDK
 - Maven 3.x
-- SQL Server (or update `application.properties` for MySQL/H2)
+- H2 (Mặc định - Tự động chạy in-memory) hoặc SQL Server (Tùy chọn)
 
 ### Setup & Installation
 
@@ -101,6 +101,16 @@ src/main/java/com/hdtpt/pentachat/
    mvn clean install
    mvn spring-boot:run
    ```
+
+### 🐳 Run with Docker
+Bạn có thể khởi chạy toàn bộ hệ thống (bao gồm database SQL Server) chỉ bằng một lệnh duy nhất:
+
+1. **Yêu cầu**: Đã cài đặt Docker và Docker Compose.
+2. **Khởi chạy**:
+   ```bash
+   docker-compose up -d --build
+   ```
+3. **Kiểm tra**: Backend sẽ chạy tại [http://localhost:8080](http://localhost:8080) và Swagger tại [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html).
 
 ---
 
