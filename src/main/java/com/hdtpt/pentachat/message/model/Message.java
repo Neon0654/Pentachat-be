@@ -40,7 +40,7 @@ public class Message extends BaseEntity {
     @Column(nullable = false)
     private Long targetId; // userId for PERSONAL, groupId for GROUP
 
-    @Column(nullable = false, columnDefinition = "NVARCHAR(MAX)")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(nullable = true)
